@@ -13,7 +13,8 @@ jobs:
       project: Benchmarks/Benchmarks/Benchmarks.csproj
     variables:
       filterArg: "*"
-    arguments: --filter {{filterArg}} --memory --warmupCount 5 iterationCount 1000
+      jobArg: short
+    arguments: --j {{jobArg}} --filter {{filterArg}} --memory
     options:
       benchmarkDotNet: true
 
@@ -21,54 +22,3 @@ scenarios:
   dataprotector:
     application:
       job: benchmarks
-
-profiles:
-  aspnet-perf-win:
-    variables:
-      serverAddress: 10.0.0.110
-      cores: 12
-    jobs: 
-      db:
-        endpoints: 
-          - http://asp-perf-load:5001
-        aliases:
-          - downstream
-          - extra
-      application:
-        endpoints: 
-          - http://asp-perf-win:5001
-        variables:
-          databaseServer: 10.0.0.105
-        aliases:
-          - main
-      load:
-        endpoints: 
-          - http://asp-perf-db:5001
-        aliases:
-          - warmup
-          - secondary
-
-  aspnet-perf-lin:
-    variables:
-      serverAddress: 10.0.0.102
-      cores: 12
-    jobs: 
-      db:
-        endpoints: 
-          - http://asp-perf-db:5001
-        aliases:
-          - downstream
-          - extra
-      application:
-        endpoints: 
-          - http://asp-perf-lin:5001
-        variables:
-          databaseServer: 10.0.0.106
-        aliases:
-          - main
-      load:
-        endpoints: 
-          - http://asp-perf-load:5001
-        aliases:
-          - warmup
-          - secondary
