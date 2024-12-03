@@ -22,10 +22,3 @@ scenarios:
   dataprotector:
     application:
       job: benchmarks
-
-profiles:
-  local:
-    jobs: 
-      application:
-        endpoints: 
-          - http://localhost:5010
