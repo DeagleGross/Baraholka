@@ -13,7 +13,7 @@ jobs:
       project: Benchmarks/Benchmarks/Benchmarks.csproj
     variables:
       filterArg: "*"
-      jobArg: short
+      jobArg: Medium
     arguments: --job {{jobArg}} --filter {{filterArg}} --memory
     options:
       benchmarkDotNet: true
