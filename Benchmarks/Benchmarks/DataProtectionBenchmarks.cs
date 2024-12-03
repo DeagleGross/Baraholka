@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 namespace Benchmarks;
 
 [MemoryDiagnoser]
+[SimpleJob(launchCount: 3, warmupCount: 10, iterationCount: 30)]
 public class DataProtectionBenchmarks
 {
     private readonly IDataProtector _dataProtector;
@@ -19,7 +20,7 @@ public class DataProtectionBenchmarks
 
     public DataProtectionBenchmarks()
     {
-        _repeatCount = 100;
+        _repeatCount = 1000;
 
         var services = new ServiceCollection()
             .AddDataProtection()
