@@ -1,4 +1,4 @@
-﻿﻿imports:
+﻿imports:
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.standard.yml?raw=true
 
 variables:
