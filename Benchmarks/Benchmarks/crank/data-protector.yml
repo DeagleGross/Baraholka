@@ -10,7 +10,7 @@ jobs:
     source:
       repository: https://github.com/DeagleGross/Baraholka.git
       branchOrCommit: main
-      project: src/DataProtection/DataProtection/benchmarks/Microsoft.AspNetCore.DataProtection.Benchmarks/Microsoft.AspNetCore.DataProtection.Benchmarks.csproj
+      project: Benchmarks/Benchmarks/Benchmarks.csproj
     variables:
       filterArg: "*"
       jobArg: short
