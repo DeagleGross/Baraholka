@@ -1,50 +1,38 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.DataProtection;
-using System.Security.Cryptography;
 
 namespace Benchmarks;
 
 [MemoryDiagnoser]
 public class DataProtectionBenchmarks
 {
-    private readonly IDataProtector _dataProtector;
-    private readonly int _repeatCount;
+    private IDataProtector _dataProtector;
+    const string AntiforgeryTokenSample = "CfDJ8H5oH_fp1QNBmvs-OWXxsVoV30hrXeI4-PI4p1VZytjsgd0DTstMdtTZbFtm2dKHvsBlDCv7TiEWKztZf8fb48pUgBgUE2SeYV3eOUXvSfNWU0D8SmHLy5KEnwKKkZKqudDhCnjQSIU7mhDliJJN1e4";
 
-    const string LoremIpsumData = """
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        In sit amet libero in urna pretium ullamcorper sit amet at est.
-        Morbi finibus dui non aliquam faucibus. Maecenas tempor viverra vulputate.
-        Sed id luctus nibh. Etiam eu metus ligula.
-    """;
+    string _protectedData;
 
-    public DataProtectionBenchmarks()
+    [GlobalSetup]
+    public void Setup()
     {
-        _repeatCount = 1000;
-
         var services = new ServiceCollection()
             .AddDataProtection()
             .Services.BuildServiceProvider();
         _dataProtector = services.GetDataProtector("SamplePurpose");
-    }
 
-
-    [Benchmark]
-    public void Protect()
-    {
-        for (var i = 0; i < _repeatCount; i++)
-        {
-            _ = _dataProtector.Protect(LoremIpsumData);
-        }
+        _protectedData = _dataProtector.Protect(AntiforgeryTokenSample);
     }
 
     [Benchmark]
-    public void Unprotect()
+    public string Protect()
     {
-        var protectedData = _dataProtector.Protect(LoremIpsumData);
+        var encrypted = _dataProtector.Protect(AntiforgeryTokenSample);
+        return encrypted;
+    }
 
-        for (var i = 0; i < _repeatCount; i++)
-        {
-            _ = _dataProtector.Unprotect(protectedData);
-        }
+    [Benchmark]
+    public string Unprotect()
+    {
+        var encrypted = _dataProtector.Unprotect(_protectedData);
+        return encrypted;
     }
 }

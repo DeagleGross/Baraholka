@@ -13,7 +13,7 @@ jobs:
       project: Benchmarks/Benchmarks/Benchmarks.csproj
     variables:
       filterArg: "*"
-    arguments: --filter {{filterArg}} --memory --warmupCount 1 --minIterationCount 9 --maxIterationCount 12
+    arguments: --filter {{filterArg}} --memory --warmupCount 5 iterationCount 1000
     options:
       benchmarkDotNet: true
 
