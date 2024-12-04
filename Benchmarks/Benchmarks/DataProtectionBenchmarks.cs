@@ -14,6 +14,7 @@ public class DataProtectionBenchmarks
     [GlobalSetup]
     public void Setup()
     {
+        // I am resolving the data protector from ServiceProvider, because it is an internal type.
         var services = new ServiceCollection()
             .AddDataProtection()
             .Services.BuildServiceProvider();
