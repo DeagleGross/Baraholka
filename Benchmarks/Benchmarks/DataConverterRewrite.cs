@@ -20,7 +20,13 @@ namespace Benchmarks
         {
             purposes =
             [
-                "MySample",
+                "SamplePurposes",
+                "MyTry",
+                "qwe",
+                "SamplePurposes",
+                "MyTry",
+                "qwe",
+                "SamplePurposes",
                 "MyTry",
                 "qwe"
             ];
@@ -82,6 +88,7 @@ namespace Benchmarks
             byte[] targetArr = new byte[totalPurposeLen];
             var targetSpan = targetArr.AsSpan();
             BinaryPrimitives.WriteUInt32BigEndian(targetSpan.Slice(0), MAGIC_HEADER_V0);
+            // keyId
             BinaryPrimitives.WriteInt32BigEndian(targetSpan.Slice(4 + keySize), purposes.Length);
             
             int index = 4 + keySize + 4; // starting from first purpose
@@ -91,11 +98,96 @@ namespace Benchmarks
 
                 // writing `utf8ByteCount (7-bit encoded integer) || utf8Text`
                 // we have already calculated the lengths of the purpose strings, so just get it from the pool
-                index += Write7BitEncodedInt(purposeLengthsPool[i], targetSpan.Slice(index));
+                index += Write7BitEncodedInt(purposeLengthsPool[i] /* maybe better to not pool but to directly `SecureUtf8Encoding.GetByteCount(purpose)` */, targetSpan.Slice(index));
                 index += SecureUtf8Encoding.GetBytes(purpose.AsSpan(), targetSpan.Slice(index));
             }
 
             ArrayPool<int>.Shared.Return(purposeLengthsPool);
+            Debug.Assert(index == targetArr.Length);
+            return targetArr;
+        }
+
+        [Benchmark]
+        public byte[] Manual_CalculateByteCountEveryTime()
+        {
+            // additionalAuthenticatedData := { magicHeader (32-bit) || keyId || purposeCount (32-bit) || (purpose)* }
+            // purpose := { utf8ByteCount (7-bit encoded) || utf8Text }
+
+            var keySize = sizeof(Guid);
+            int totalPurposeLen = 4 + keySize + 4;
+
+            for (int i = 0; i < purposes.Length; i++)
+            {
+                string purpose = purposes[i];
+                int purposeLength = SecureUtf8Encoding.GetByteCount(purpose);
+                var encoded7BitUIntLength = Measure7BitEncodedUIntLength((uint)purposeLength);
+                totalPurposeLen += purposeLength /* length of actual string */ + encoded7BitUIntLength /* length of 'string length' 7-bit encoded int */;
+            }
+
+            byte[] targetArr = new byte[totalPurposeLen];
+            var targetSpan = targetArr.AsSpan();
+            BinaryPrimitives.WriteUInt32BigEndian(targetSpan.Slice(0), MAGIC_HEADER_V0);
+            // keyId
+            BinaryPrimitives.WriteInt32BigEndian(targetSpan.Slice(4 + keySize), purposes.Length);
+
+            int index = 4 + keySize + 4; // starting from first purpose
+            for (int i = 0; i < purposes.Length; i++)
+            {
+                string purpose = purposes[i];
+
+                // writing `utf8ByteCount (7-bit encoded integer) || utf8Text`
+                // we have already calculated the lengths of the purpose strings, so just get it from the pool
+                index += Write7BitEncodedInt(SecureUtf8Encoding.GetByteCount(purpose), targetSpan.Slice(index));
+                index += SecureUtf8Encoding.GetBytes(purpose.AsSpan(), targetSpan.Slice(index));
+            }
+
+            Debug.Assert(index == targetArr.Length);
+            return targetArr;
+        }
+
+        [Benchmark]
+        public byte[] Manual_StackAllocForSmallPurposeArrays()
+        {
+            // additionalAuthenticatedData := { magicHeader (32-bit) || keyId || purposeCount (32-bit) || (purpose)* }
+            // purpose := { utf8ByteCount (7-bit encoded) || utf8Text }
+
+            var keySize = sizeof(Guid);
+            int totalPurposeLen = 4 + keySize + 4;
+
+            int[]? lease = null;
+            Span<int> purposeLengthsPool = purposes.Length <= 32 ? stackalloc int[purposes.Length] : (lease = ArrayPool<int>.Shared.Rent(purposes.Length)).AsSpan(0, purposes.Length);
+            for (int i = 0; i < purposes.Length; i++)
+            {
+                string purpose = purposes[i];
+
+                int purposeLength = SecureUtf8Encoding.GetByteCount(purpose);
+                purposeLengthsPool[i] = purposeLength;
+
+                var encoded7BitUIntLength = Measure7BitEncodedUIntLength((uint)purposeLength);
+                totalPurposeLen += purposeLength /* length of actual string */ + encoded7BitUIntLength /* length of 'string length' 7-bit encoded int */;
+            }
+
+            byte[] targetArr = new byte[totalPurposeLen];
+            var targetSpan = targetArr.AsSpan();
+            BinaryPrimitives.WriteUInt32BigEndian(targetSpan.Slice(0), MAGIC_HEADER_V0);
+            // keyId
+            BinaryPrimitives.WriteInt32BigEndian(targetSpan.Slice(4 + keySize), purposes.Length);
+
+            int index = 4 + keySize + 4; // starting from first purpose
+            for (int i = 0; i < purposes.Length; i++)
+            {
+                string purpose = purposes[i];
+
+                // writing `utf8ByteCount (7-bit encoded integer) || utf8Text`
+                // we have already calculated the lengths of the purpose strings, so just get it from the pool
+                index += Write7BitEncodedInt(purposeLengthsPool[i] /* maybe better to not pool but to directly `SecureUtf8Encoding.GetByteCount(purpose)` */, targetSpan.Slice(index));
+                index += SecureUtf8Encoding.GetBytes(purpose.AsSpan(), targetSpan.Slice(index));
+            }
+
+            if (lease is not null)
+            {
+                ArrayPool<int>.Shared.Return(lease);
+            }
             Debug.Assert(index == targetArr.Length);
             return targetArr;
         }
