@@ -1,7 +1,9 @@
 ﻿using BenchmarkDotNet.Attributes;
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Text.Unicode;
 
@@ -13,16 +15,13 @@ namespace Benchmarks
         private const uint MAGIC_HEADER_V0 = 0x09F0C9F0;
 
         static UTF8Encoding SecureUtf8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
-        private string[] purposes;        
+        private string[] purposes;
 
         [GlobalSetup]
         public void Setup()
         {
             purposes =
             [
-                "SamplePurposes",
-                "MyTry",
-                "qwe",
                 "SamplePurposes",
                 "MyTry",
                 "qwe",

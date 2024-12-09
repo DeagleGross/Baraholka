@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks;
 
