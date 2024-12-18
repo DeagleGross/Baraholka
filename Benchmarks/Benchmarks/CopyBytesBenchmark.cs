@@ -56,7 +56,7 @@ namespace Benchmarks
             Array.Copy(_source, 0, _destination, 3, BlockLength);
         }
 
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         public void Buffer_BlockCopy()
         {
             Buffer.BlockCopy(_source, 0, _destination, 3, BlockLength);
