@@ -1,10 +1,10 @@
-﻿using BenchmarkDotNet.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using BenchmarkDotNet.Attributes;
 
 namespace Benchmarks
 {
@@ -34,7 +34,7 @@ namespace Benchmarks
     {
         private byte[] _source;
         private byte[] _destination;
-        
+
         [Params(10, 100, 1000)]
         public int N;
 

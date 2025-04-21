@@ -1,11 +1,11 @@
-﻿using BenchmarkDotNet.Attributes;
-using System;
+﻿using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Unicode;
+using BenchmarkDotNet.Attributes;
 
 namespace Benchmarks
 {
@@ -89,7 +89,7 @@ namespace Benchmarks
             BinaryPrimitives.WriteUInt32BigEndian(targetSpan.Slice(0), MAGIC_HEADER_V0);
             // keyId
             BinaryPrimitives.WriteInt32BigEndian(targetSpan.Slice(4 + keySize), purposes.Length);
-            
+
             int index = 4 + keySize + 4; // starting from first purpose
             for (int i = 0; i < purposes.Length; i++)
             {
