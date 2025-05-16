@@ -20,10 +20,10 @@ scenarios:
     application:
       job: benchmarks
       variables:
-        filterArg: "DataProtectionBenchmarks"
+        filterArg: "*DataProtectionBenchmarks*"
 
   antiforgery:
     application:
       job: benchmarks
       variables:
-        filterArg: "AntiforgeryBenchmarks"
+        filterArg: "*AntiforgeryBenchmarks*"
