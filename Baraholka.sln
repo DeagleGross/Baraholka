@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DapperTest", "DapperTest\Da
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{2311A35A-630F-8D56-15CD-BBB525570F8F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpSys", "HttpSys\HttpSys.csproj", "{21F9792E-5816-4072-8B6E-ED992BD16832}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpClient", "HttpClient\HttpClient.csproj", "{E2E56541-F164-4F68-8500-8A29F7BEA9B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{2311A35A-630F-8D56-15CD-BBB525570F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2311A35A-630F-8D56-15CD-BBB525570F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2311A35A-630F-8D56-15CD-BBB525570F8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21F9792E-5816-4072-8B6E-ED992BD16832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21F9792E-5816-4072-8B6E-ED992BD16832}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21F9792E-5816-4072-8B6E-ED992BD16832}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21F9792E-5816-4072-8B6E-ED992BD16832}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2E56541-F164-4F68-8500-8A29F7BEA9B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2E56541-F164-4F68-8500-8A29F7BEA9B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2E56541-F164-4F68-8500-8A29F7BEA9B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2E56541-F164-4F68-8500-8A29F7BEA9B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

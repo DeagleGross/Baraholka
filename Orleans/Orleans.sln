@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35431.28
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.3x", "Orleans.3x\Orleans.3x.csproj", "{61B98DD2-0AB1-4182-A575-73F6F78FF072}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.8x", "Orleans.8x\Orleans.8x.csproj", "{906F1625-D257-4795-BE29-112058C9E8B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosTest", "CosmosTest\CosmosTest.csproj", "{88E55F76-625D-4C7E-9AC9-F3D4283F44B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{975F275E-4D3F-4DE7-8E7C-EB81AF787158}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTest", "OrleansTest\OrleansTest.csproj", "{43001B83-E9A3-4375-9723-866D52313830}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansMigrationSource", "OrleansMigrationSource\OrleansMigrationSource.csproj", "{7482E977-05AA-4C71-971C-8A9C3260630A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{61B98DD2-0AB1-4182-A575-73F6F78FF072}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61B98DD2-0AB1-4182-A575-73F6F78FF072}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61B98DD2-0AB1-4182-A575-73F6F78FF072}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61B98DD2-0AB1-4182-A575-73F6F78FF072}.Release|Any CPU.Build.0 = Release|Any CPU
+		{906F1625-D257-4795-BE29-112058C9E8B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{906F1625-D257-4795-BE29-112058C9E8B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{906F1625-D257-4795-BE29-112058C9E8B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{906F1625-D257-4795-BE29-112058C9E8B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88E55F76-625D-4C7E-9AC9-F3D4283F44B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88E55F76-625D-4C7E-9AC9-F3D4283F44B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88E55F76-625D-4C7E-9AC9-F3D4283F44B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88E55F76-625D-4C7E-9AC9-F3D4283F44B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{975F275E-4D3F-4DE7-8E7C-EB81AF787158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{975F275E-4D3F-4DE7-8E7C-EB81AF787158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{975F275E-4D3F-4DE7-8E7C-EB81AF787158}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{975F275E-4D3F-4DE7-8E7C-EB81AF787158}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43001B83-E9A3-4375-9723-866D52313830}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43001B83-E9A3-4375-9723-866D52313830}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43001B83-E9A3-4375-9723-866D52313830}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43001B83-E9A3-4375-9723-866D52313830}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7482E977-05AA-4C71-971C-8A9C3260630A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7482E977-05AA-4C71-971C-8A9C3260630A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7482E977-05AA-4C71-971C-8A9C3260630A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7482E977-05AA-4C71-971C-8A9C3260630A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {239FE880-8C99-45E5-816D-8AB2479B0F97}
+	EndGlobalSection
+EndGlobal

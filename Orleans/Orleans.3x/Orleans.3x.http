@@ -1,0 +1,6 @@
+@Orleans._3x_HostAddress = http://localhost:5271
+
+GET {{Orleans._3x_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

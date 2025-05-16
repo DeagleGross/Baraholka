@@ -1,0 +1,6 @@
+@Orleans._8x_HostAddress = http://localhost:5067
+
+GET {{Orleans._8x_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
