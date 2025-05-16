@@ -10,7 +10,7 @@ jobs:
     source:
       repository: https://github.com/DeagleGross/Baraholka.git
       branchOrCommit: main
-      project: Benchmarks/Benchmarks/Benchmarks.csproj
+      project: Benchmarks/Benchmarks.csproj
     arguments: --filter {{filterArg}} --memory
     options:
       benchmarkDotNet: true
