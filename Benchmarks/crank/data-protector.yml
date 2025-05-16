@@ -21,3 +21,11 @@ scenarios:
   dataprotector:
     application:
       job: benchmarks
+      variables:
+        filterArg: "DataProtection*"
+
+  antiforgery:
+    application:
+      job: benchmarks
+      variables:
+        filterArg: "Antiforgery*"
