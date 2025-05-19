@@ -17,9 +17,6 @@ namespace Benchmarks
     {
         private IAntiforgery _antiforgery;
 
-        AntiforgeryTokenSet _tokenSet;
-        AntiforgeryTokenSet _userTokenSet;
-
         HttpContext _incomingRequestCtx;
         HttpContext _incomingRequestWithUserCtx;
 
@@ -52,16 +49,9 @@ namespace Benchmarks
         }
 
         [Benchmark]
-        public async Task ValidateWithUser()
-        {
-            await _antiforgery.ValidateRequestAsync(_incomingRequestWithUserCtx);
-        }
-
+        public Task ValidateWithUser() => _antiforgery.ValidateRequestAsync(_incomingRequestWithUserCtx);
         [Benchmark]
-        public async Task Validate()
-        {
-            await _antiforgery.ValidateRequestAsync(_incomingRequestCtx);
-        }
+        public Task Validate() => _antiforgery.ValidateRequestAsync(_incomingRequestCtx);
 
         private static HttpContext PrepareRequest(IAntiforgery antiforgery, string cookieName, bool withIdentity = false)
         {
