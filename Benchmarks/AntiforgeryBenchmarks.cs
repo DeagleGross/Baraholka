@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Benchmarks
@@ -18,6 +19,7 @@ namespace Benchmarks
         AntiforgeryTokenSet _tokenSet;
 
         HttpContext _incomingRequestCtx;
+        HttpContext _incomingRequestWithUserCtx;
 
         [GlobalSetup]
         public void Setup()
@@ -41,6 +43,11 @@ namespace Benchmarks
             _incomingRequestCtx = new DefaultHttpContext();
             _incomingRequestCtx.Request.Headers["XSRF-TOKEN"] = _tokenSet.RequestToken;
             _incomingRequestCtx.Request.Headers["Cookie"] = $"{cookieName}={_tokenSet.CookieToken}";
+
+            _incomingRequestWithUserCtx = new DefaultHttpContext();
+            _incomingRequestWithUserCtx.Request.Headers["XSRF-TOKEN"] = _tokenSet.RequestToken;
+            _incomingRequestWithUserCtx.Request.Headers["Cookie"] = $"{cookieName}={_tokenSet.CookieToken}";
+            _incomingRequestWithUserCtx.User = new ClaimsPrincipal(GetAuthenticatedIdentity("myIdentity"));
         }
 
         [Benchmark]
@@ -51,9 +58,21 @@ namespace Benchmarks
         }
 
         [Benchmark]
+        public async Task ValidateWithUser()
+        {
+            await _antiforgery.ValidateRequestAsync(_incomingRequestWithUserCtx);
+        }
+
+        [Benchmark]
         public async Task Validate()
         {
             await _antiforgery.ValidateRequestAsync(_incomingRequestCtx);
+        }
+
+        private static ClaimsIdentity GetAuthenticatedIdentity(string identityUsername)
+        {
+            var claim = new Claim(ClaimsIdentity.DefaultNameClaimType, identityUsername);
+            return new ClaimsIdentity(new[] { claim }, "Some-Authentication");
         }
     }
 }
