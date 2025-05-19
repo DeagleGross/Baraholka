@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Antiforgery.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ namespace Benchmarks
         private IAntiforgery _antiforgery;
 
         AntiforgeryTokenSet _tokenSet;
+        AntiforgeryTokenSet _userTokenSet;
 
         HttpContext _incomingRequestCtx;
         HttpContext _incomingRequestWithUserCtx;
@@ -39,15 +41,25 @@ namespace Benchmarks
 
             var cookieName = services.GetRequiredService<IOptions<AntiforgeryOptions>>().Value.Cookie.Name;
 
-            _tokenSet = _antiforgery.GetAndStoreTokens(new DefaultHttpContext());
             _incomingRequestCtx = new DefaultHttpContext();
+            _incomingRequestWithUserCtx = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(GetAuthenticatedIdentity("the-user"))
+            };
+
+            _tokenSet = _antiforgery.GetAndStoreTokens(_incomingRequestCtx);
+            var antiforgeryFeature = _incomingRequestCtx.Features.Get<IAntiforgeryFeature>();
+            antiforgeryFeature.CookieToken ??= antiforgeryFeature.NewCookieToken;
+
+            _userTokenSet = _antiforgery.GetAndStoreTokens(_incomingRequestWithUserCtx);
+            antiforgeryFeature = _incomingRequestWithUserCtx.Features.Get<IAntiforgeryFeature>();
+            antiforgeryFeature.CookieToken ??= antiforgeryFeature.NewCookieToken;
+
             _incomingRequestCtx.Request.Headers["XSRF-TOKEN"] = _tokenSet.RequestToken;
             _incomingRequestCtx.Request.Headers["Cookie"] = $"{cookieName}={_tokenSet.CookieToken}";
 
-            _incomingRequestWithUserCtx = new DefaultHttpContext();
-            _incomingRequestWithUserCtx.Request.Headers["XSRF-TOKEN"] = _tokenSet.RequestToken;
-            _incomingRequestWithUserCtx.Request.Headers["Cookie"] = $"{cookieName}={_tokenSet.CookieToken}";
-            _incomingRequestWithUserCtx.User = new ClaimsPrincipal(GetAuthenticatedIdentity("myIdentity"));
+            _incomingRequestWithUserCtx.Request.Headers["XSRF-TOKEN"] = _userTokenSet.RequestToken;
+            _incomingRequestWithUserCtx.Request.Headers["Cookie"] = $"{cookieName}={_userTokenSet.CookieToken}";
         }
 
         [Benchmark]
