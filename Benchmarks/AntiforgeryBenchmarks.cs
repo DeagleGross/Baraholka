@@ -1,12 +1,12 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Antiforgery.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -17,6 +17,9 @@ namespace Benchmarks
     {
         private IAntiforgery _antiforgery;
 
+        AntiforgeryTokenSet _tokenSet;
+        AntiforgeryTokenSet _userTokenSet;
+
         HttpContext _incomingRequestCtx;
         HttpContext _incomingRequestWithUserCtx;
 
@@ -26,7 +29,6 @@ namespace Benchmarks
             var serviceCollection = new ServiceCollection()
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .AddSingleton(typeof(ILogger<>), typeof(NullLogger<>))
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddAntiforgery();
 
             serviceCollection.Configure<AntiforgeryOptions>(options => {
@@ -38,17 +40,8 @@ namespace Benchmarks
 
             var cookieName = services.GetRequiredService<IOptions<AntiforgeryOptions>>().Value.Cookie.Name;
 
-            _incomingRequestCtx = new DefaultHttpContext();
-            _incomingRequestWithUserCtx = new DefaultHttpContext
-            {
-                User = new ClaimsPrincipal(GetAuthenticatedIdentity("the-user"))
-            };
-
-            _incomingRequestCtx.Request.Headers["XSRF-TOKEN"] = "CfDJ8A0IIE8u6t5FsaKqaPkasDmubNpMx80apZHWZrsPmdpBXsWnh3Ildqnk_3rZtiEsqy9tjqXzjpGrCos-6fnIUCkxkAgwLHey4C1XM--ueeFgKZ8AB-Ouh3zWy6xVtNZRd9hnVmuNiPKNdWkoDkKwlLE";
-            _incomingRequestCtx.Request.Headers["Cookie"] = $"{cookieName}=CfDJ8A0IIE8u6t5FsaKqaPkasDn6SJIKfTcyhi-cLzwa0-HgMchyjVeaw4NwAnQc0xcRx3lidshjZz5yj8a1Njc3X_n-4EOM6AzTGxwDPEXlLvtjNisjJj1Me72lbf_OPuy7JgpVTKr-E8UbJgOmlxaV4fs";
-
-            _incomingRequestWithUserCtx.Request.Headers["XSRF-TOKEN"] = "CfDJ8A0IIE8u6t5FsaKqaPkasDkMhe6t3h63Kfj4EbBvtt0hQQ_PRmJ_wGfd__jcQJmoivqSo4dZuO-Pw8fiPCRXKEJ2RWZht0pZnR3jdTZv2hxoCm88aTx1t9yEpu-sAKhRSc_uCoqvktu25HheU1TSKqHJM4vAOMLWA5dvRnHK3isZk73eNLfmPm5tICKv_NXiDw";
-            _incomingRequestWithUserCtx.Request.Headers["Cookie"] = $"{cookieName}=CfDJ8A0IIE8u6t5FsaKqaPkasDloVgzUs-caOwK3jtE5xvl112d-AQxUB5tf1DC_NKNRJxxwQ_Iffj2Mhc9RcOeSGt5vkfz3V2NhR2w4CfC4NqXH1ppMCgviD5pDFaj6lcr27jQOwxkwOjmvj6LzX2i8ulo";
+            _incomingRequestCtx = PrepareRequest(_antiforgery, cookieName, withIdentity: false);
+            _incomingRequestWithUserCtx = PrepareRequest(_antiforgery, cookieName, withIdentity: true);
         }
 
         [Benchmark]
@@ -70,10 +63,43 @@ namespace Benchmarks
             await _antiforgery.ValidateRequestAsync(_incomingRequestCtx);
         }
 
-        private static ClaimsIdentity GetAuthenticatedIdentity(string identityUsername)
+        private static HttpContext PrepareRequest(IAntiforgery antiforgery, string cookieName, bool withIdentity = false)
         {
-            var claim = new Claim(ClaimsIdentity.DefaultNameClaimType, identityUsername);
-            return new ClaimsIdentity(new[] { claim }, "Some-Authentication");
+            // Simulate initial request to get tokens and capture Set-Cookie header
+            var ctx = new DefaultHttpContext();
+            if (withIdentity)
+            {
+                ctx.User = new ClaimsPrincipal(GetAuthenticatedIdentity("the-user"));
+            }
+
+            var tokens = antiforgery.GetAndStoreTokens(ctx);
+
+            // Extract the Set-Cookie header from the response (written by GetAndStoreTokens)
+            var setCookieHeader = ctx.Response.Headers["Set-Cookie"];
+            var cookieValue = setCookieHeader
+                .FirstOrDefault(h => h.StartsWith(cookieName + "="))?
+                .Split(';')[0]  // e.g. XSRF-TOKEN=abc123...
+                .Substring(cookieName.Length + 1); // Just the value
+
+            if (cookieValue == null)
+                throw new InvalidOperationException("Failed to extract antiforgery cookie.");
+
+            // Set headers on your test context
+            var context = new DefaultHttpContext();
+            context.Request.Headers["XSRF-TOKEN"] = tokens.RequestToken;
+            context.Request.Headers["Cookie"] = $"{cookieName}={cookieValue}";
+            if (withIdentity)
+            {
+                context.User = ctx.User;
+            }
+
+            return context;
+
+            ClaimsIdentity GetAuthenticatedIdentity(string identityUsername)
+            {
+                var claim = new Claim(ClaimsIdentity.DefaultNameClaimType, identityUsername);
+                return new ClaimsIdentity(new[] { claim }, "Some-Authentication");
+            }
         }
     }
 }
