@@ -17,9 +17,6 @@ namespace Benchmarks
     {
         private IAntiforgery _antiforgery;
 
-        AntiforgeryTokenSet _tokenSet;
-        AntiforgeryTokenSet _userTokenSet;
-
         HttpContext _incomingRequestCtx;
         HttpContext _incomingRequestWithUserCtx;
 
@@ -47,19 +44,11 @@ namespace Benchmarks
                 User = new ClaimsPrincipal(GetAuthenticatedIdentity("the-user"))
             };
 
-            _tokenSet = _antiforgery.GetAndStoreTokens(_incomingRequestCtx);
-            var antiforgeryFeature = _incomingRequestCtx.Features.Get<IAntiforgeryFeature>();
-            antiforgeryFeature.CookieToken ??= antiforgeryFeature.NewCookieToken;
+            _incomingRequestCtx.Request.Headers["XSRF-TOKEN"] = "CfDJ8A0IIE8u6t5FsaKqaPkasDmubNpMx80apZHWZrsPmdpBXsWnh3Ildqnk_3rZtiEsqy9tjqXzjpGrCos-6fnIUCkxkAgwLHey4C1XM--ueeFgKZ8AB-Ouh3zWy6xVtNZRd9hnVmuNiPKNdWkoDkKwlLE";
+            _incomingRequestCtx.Request.Headers["Cookie"] = $"{cookieName}=CfDJ8A0IIE8u6t5FsaKqaPkasDn6SJIKfTcyhi-cLzwa0-HgMchyjVeaw4NwAnQc0xcRx3lidshjZz5yj8a1Njc3X_n-4EOM6AzTGxwDPEXlLvtjNisjJj1Me72lbf_OPuy7JgpVTKr-E8UbJgOmlxaV4fs";
 
-            _userTokenSet = _antiforgery.GetAndStoreTokens(_incomingRequestWithUserCtx);
-            antiforgeryFeature = _incomingRequestWithUserCtx.Features.Get<IAntiforgeryFeature>();
-            antiforgeryFeature.CookieToken ??= antiforgeryFeature.NewCookieToken;
-
-            _incomingRequestCtx.Request.Headers["XSRF-TOKEN"] = _tokenSet.RequestToken;
-            _incomingRequestCtx.Request.Headers["Cookie"] = $"{cookieName}={_tokenSet.CookieToken}";
-
-            _incomingRequestWithUserCtx.Request.Headers["XSRF-TOKEN"] = _userTokenSet.RequestToken;
-            _incomingRequestWithUserCtx.Request.Headers["Cookie"] = $"{cookieName}={_userTokenSet.CookieToken}";
+            _incomingRequestWithUserCtx.Request.Headers["XSRF-TOKEN"] = "CfDJ8A0IIE8u6t5FsaKqaPkasDkMhe6t3h63Kfj4EbBvtt0hQQ_PRmJ_wGfd__jcQJmoivqSo4dZuO-Pw8fiPCRXKEJ2RWZht0pZnR3jdTZv2hxoCm88aTx1t9yEpu-sAKhRSc_uCoqvktu25HheU1TSKqHJM4vAOMLWA5dvRnHK3isZk73eNLfmPm5tICKv_NXiDw";
+            _incomingRequestWithUserCtx.Request.Headers["Cookie"] = $"{cookieName}=CfDJ8A0IIE8u6t5FsaKqaPkasDloVgzUs-caOwK3jtE5xvl112d-AQxUB5tf1DC_NKNRJxxwQ_Iffj2Mhc9RcOeSGt5vkfz3V2NhR2w4CfC4NqXH1ppMCgviD5pDFaj6lcr27jQOwxkwOjmvj6LzX2i8ulo";
         }
 
         [Benchmark]
