@@ -1,0 +1,6 @@
+@MemoryOrleans_HostAddress = http://localhost:5165
+
+GET {{MemoryOrleans_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
