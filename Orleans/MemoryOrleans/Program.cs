@@ -1,6 +1,7 @@
 using MemoryOrleans.Models;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using Orleans.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,12 +12,12 @@ builder.Host.UseOrleans(static siloBuilder =>
 
     siloBuilder.Configure<GrainCollectionOptions>(options =>
     {
-        options.MemoryBasedOptions = new MemoryBasedGrainCollectionOptions
+        options.MemoryPressureGrainCollectionOptions = new()
         {
-            MemoryLoadValidationQuantum = TimeSpan.FromSeconds(3),
-            HeapMemoryThresholdMb = 120,
-            TargetHeapMemoryMb = 100,
-            ThresholdMode = MemoryThresholdMode.AbsoluteMb
+            MemoryUsageCollectionEnabled = true,
+            MemoryUsagePollingPeriod = TimeSpan.FromSeconds(3),
+            MemoryUsageLimitPercentage = 75,
+            MemoryUsageTargetPercentage = 60
         };
     });
 });

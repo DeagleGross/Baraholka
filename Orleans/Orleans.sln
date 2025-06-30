@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.8x", "Orleans.8x\Or
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosTest", "CosmosTest\CosmosTest.csproj", "{88E55F76-625D-4C7E-9AC9-F3D4283F44B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{975F275E-4D3F-4DE7-8E7C-EB81AF787158}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansTest", "OrleansTest\OrleansTest.csproj", "{43001B83-E9A3-4375-9723-866D52313830}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrleansMigrationSource", "OrleansMigrationSource\OrleansMigrationSource.csproj", "{7482E977-05AA-4C71-971C-8A9C3260630A}"
@@ -33,10 +31,6 @@ Global
 		{88E55F76-625D-4C7E-9AC9-F3D4283F44B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88E55F76-625D-4C7E-9AC9-F3D4283F44B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88E55F76-625D-4C7E-9AC9-F3D4283F44B4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{975F275E-4D3F-4DE7-8E7C-EB81AF787158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{975F275E-4D3F-4DE7-8E7C-EB81AF787158}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{975F275E-4D3F-4DE7-8E7C-EB81AF787158}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{975F275E-4D3F-4DE7-8E7C-EB81AF787158}.Release|Any CPU.Build.0 = Release|Any CPU
 		{43001B83-E9A3-4375-9723-866D52313830}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{43001B83-E9A3-4375-9723-866D52313830}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43001B83-E9A3-4375-9723-866D52313830}.Release|Any CPU.ActiveCfg = Release|Any CPU

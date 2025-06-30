@@ -9,9 +9,9 @@
   <ItemGroup>
 	<PackageReference Include="Azure.Identity" Version="1.13.2" />
 	<PackageReference Include="Microsoft.Orleans.CodeGenerator.MSBuild" Version="3.8.0-preview3" />
-	<PackageReference Include="Microsoft.Orleans.Persistence.Cosmos.Migration" Version="3.8.0-preview3" />
-	<PackageReference Include="Microsoft.Orleans.Persistence.Migration" Version="3.8.0-preview3" />
-	<PackageReference Include="Microsoft.Orleans.Persistence.AzureStorage.Migration" Version="3.8.0-preview3" />
+	<PackageReference Include="Microsoft.Orleans.Persistence.Migration" Version="3.8.0-preview5" />
+	<PackageReference Include="Microsoft.Orleans.Persistence.Cosmos" Version="3.8.0-preview5" />
+	<PackageReference Include="Microsoft.Orleans.Persistence.AzureStorage.Migration" Version="3.8.0-preview5" />
   </ItemGroup>
 
 </Project>

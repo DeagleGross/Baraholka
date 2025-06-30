@@ -1,88 +1,122 @@
+using Azure.Identity;
+using Orleans;
 using Orleans.Hosting;
-using Orleans.Runtime;
-using Orleans.Services;
-using Orleans.Timers;
+using Orleans.Persistence.AzureStorage.Migration.Reminders;
+using Orleans.Persistence.Migration;
+using Orleans.Persistence.AzureStorage.Migration;
+using Orleans.Migration.Source;
 
+var rnd = new Random();
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseOrleans(siloBuilder =>
 {
     siloBuilder.UseLocalhostClustering();
 
-    // builder.AddAzureTableGrainStorageAsDefault(opt => opt.);
-    siloBuilder.UseAzureTableReminderService("UseDevelopmentStorage=true");
+    siloBuilder
+        .AddMigrationTools() // once
+        .AddDataMigrator("source", "destination", options =>
+        {
+            options.BackgroundTaskInitialDelay = TimeSpan.FromSeconds(5);
+        }, runAsBackgroundService: false)
+        .AddMigrationGrainStorageAsDefault(options =>
+        {
+            options.SourceStorageName = "source";
+            options.DestinationStorageName = "destination";
+
+            options.Mode = GrainMigrationMode.ReadDestinationWithFallback_WriteBoth;
+        })
+        .AddAzureBlobGrainStorage("source", options =>
+        {
+            options.ConfigureBlobServiceClient(new Uri("https://dmkorolevstorage.blob.core.windows.net/"), new DefaultAzureCredential());
+            options.ContainerName = "source1";
+        })
+        .AddMigrationAzureBlobGrainStorage("destination", options =>
+        {
+            options.ConfigureBlobServiceClient(new Uri("https://dmkorolevstorage.blob.core.windows.net/"), new DefaultAzureCredential());
+            options.ContainerName = "destination1";
+        });
+
+    siloBuilder.AddAzureTableGrainDirectory("my-grain-directory", options => 
+    {
+        options.TableName = "graindir";
+        options.ConfigureTableServiceClient(new Uri("https://dmkorolevstorage.table.core.windows.net/"), new DefaultAzureCredential());
+    });
+
+    siloBuilder
+        .UseAzureTableReminderService("source", options =>
+        {
+            options.TableName = "sourcereminders";
+            options.ConfigureTableServiceClient(new Uri("https://dmkorolevstorage.table.core.windows.net/"), new DefaultAzureCredential());
+        })
+        .UseMigrationAzureTableReminderStorage("destination", options =>
+        {
+            options.TableName = "migratedreminders";
+            options.ConfigureTableServiceClient(new Uri("https://dmkorolevstorage.table.core.windows.net/"), new DefaultAzureCredential());
+        })
+        .UseMigrationReminderTable(options =>
+        {
+            options.SourceReminderTable = "source";
+            options.DestinationReminderTable = "destination";
+
+            options.Mode = ReminderMigrationMode.ReadDestinationWithFallback_WriteBoth;
+        });
 });
 
 var app = builder.Build();
 
-app.MapGet("/grain/{grainId}", (IGrainFactory grains, int grainId) =>
+app.MapGet("/", static () => "Migration orleans test hello!");
+
+app.MapGet("/reminders/{grainId}", async (IClusterClient grains, int grainId) =>
 {
-    var grain = grains.GetGrain<IPingGrain>(grainId);
-    return Results.Ok(grain);
+    var grain = grains.GetGrain<ISimplePersistentMigrationGrain>(grainId);
+
+    await grain.RegisterReminder($"reminder-{grainId}");
+
+    var a = await grain.GetA();
+    var ab = await grain.GetAxB();
+
+    return Results.Json(new
+    {
+        Grain = grain,
+        A = a,
+        AxB = ab
+    });
 });
 
-app.MapGet("/ping/{grainId}", async (IGrainFactory grains, int grainId) =>
+
+app.MapGet("/upd/{grainId}", async (IClusterClient grains, int grainId) =>
 {
-    var grain = grains.GetGrain<IPingGrain>(grainId);
-    await grain.Ping();
+    var grain = grains.GetGrain<ISimplePersistentMigrationGrain>(grainId);
+
+    await grain.SetA(rnd.Next(0, 100));
+    await grain.SetB(rnd.Next(0, 100));
+
+    var a = await grain.GetA();
+    var ab = await grain.GetAxB();
+
+    return Results.Json(new
+    {
+        Grain = grain,
+        A = a,
+        AxB = ab
+    });
+});
+
+
+app.MapGet("/grains/{grainId}", async (IClusterClient grains, int grainId) =>
+{
+    var grain = grains.GetGrain<ISimplePersistentMigrationGrain>(grainId);
+
+    var a = await grain.GetA();
+    var ab = await grain.GetAxB();
+
+    return Results.Json(new
+    {
+        Grain = grain,
+        A = a,
+        AxB = ab
+    });
 });
 
 app.Run();
-
-public interface IPingGrain : IGrainWithIntegerKey
-{
-    Task Ping();
-}
-
-public sealed class PingGrain : IGrainBase, IPingGrain, IDisposable
-{
-    private readonly ITimerRegistry _timerRegistry;
-    private readonly IReminderRegistry _reminderRegistry;
-
-    private IGrainReminder? _reminder;
-
-    public IGrainContext GrainContext { get; }
-
-    public PingGrain(
-        ITimerRegistry timerRegistry,
-        IReminderRegistry reminderRegistry,
-        IGrainContext grainContext)
-    {
-        _timerRegistry = timerRegistry;
-        _reminderRegistry = reminderRegistry;
-        GrainContext = grainContext;
-    }
-
-    public async Task Ping()
-    {
-        // Register timer
-        _timerRegistry.RegisterGrainTimer(
-            GrainContext,
-            callback: static async (state, cancellationToken) =>
-            {
-                Console.WriteLine($"({DateTime.Now}) Invoked reminder!");
-                await Task.CompletedTask;
-            },
-            state: this,
-            options: new GrainTimerCreationOptions
-            {
-                DueTime = TimeSpan.FromSeconds(3),
-                Period = TimeSpan.FromSeconds(10)
-            });
-
-        _reminder = await _reminderRegistry.RegisterOrUpdateReminder(
-            callingGrainId: GrainContext.GrainId,
-            reminderName: GrainContext.GrainId.ToString(),
-            dueTime: TimeSpan.Zero,
-            period: TimeSpan.FromHours(1));
-    }
-
-    void IDisposable.Dispose()
-    {
-        if (_reminder is not null)
-        {
-            _reminderRegistry.UnregisterReminder(
-                GrainContext.GrainId, _reminder);
-        }
-    }
-}

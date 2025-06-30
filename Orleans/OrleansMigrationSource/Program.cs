@@ -2,8 +2,9 @@ using Azure.Identity;
 using Orleans;
 using Orleans.Hosting;
 using Orleans.Migration.Source;
-using Orleans.Persistence.Cosmos.Migration;
+using Orleans.Persistence.AzureStorage.Migration.Reminders;
 using Orleans.Persistence.Migration;
+using Orleans.Persistence.AzureStorage.Migration;
 
 var rnd = new Random();
 var builder = WebApplication.CreateBuilder(args);
@@ -23,37 +24,37 @@ builder.Host.UseOrleans(siloBuilder =>
             options.SourceStorageName = "source";
             options.DestinationStorageName = "destination";
 
-            options.Mode = GrainMigrationMode.Disabled;
+            options.Mode = GrainMigrationMode.ReadDestinationWithFallback_WriteBoth;
         })
         .AddAzureBlobGrainStorage("source", options =>
         {
             options.ConfigureBlobServiceClient(new Uri("https://dmkorolevstorage.blob.core.windows.net/"), new DefaultAzureCredential());
-            options.ContainerName = "grains";
+            options.ContainerName = "source1";
         })
-        .AddMigrationAzureCosmosGrainStorage("destination", options =>
+        .AddMigrationAzureBlobGrainStorage("destination", options =>
         {
-            options.ConfigureCosmosClient("https://dmkorolev-cosmos.documents.azure.com:443/", new DefaultAzureCredential());
-            options.DatabaseName = "MigrationSample";
-            options.ContainerName = "Destination";
-
-#pragma warning disable OrleansCosmosExperimental // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            options.UseExperimentalFormat = true;
-#pragma warning restore OrleansCosmosExperimental // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            options.ConfigureBlobServiceClient(new Uri("https://dmkorolevstorage.blob.core.windows.net/"), new DefaultAzureCredential());
+            options.ContainerName = "destination1";
         });
 
     siloBuilder
-        .UseMigrationAzureTableReminderStorage(
-            oldStorageOptions =>
-            {
-                oldStorageOptions.ConfigureTableServiceClient(new Uri("https://dmkorolevstorage.table.core.windows.net/"), new DefaultAzureCredential());
-                oldStorageOptions.TableName = "sourcereminders";
-            },
-            migrationOptions =>
-            {
-                migrationOptions.ConfigureTableServiceClient(new Uri("https://dmkorolevstorage.table.core.windows.net/"), new DefaultAzureCredential());
-                migrationOptions.TableName = "migratedreminders";
-            }
-        );
+        .UseAzureTableReminderService("source", options =>
+        {
+            options.TableName = "sourcereminders";
+            options.ConfigureTableServiceClient(new Uri("https://dmkorolevstorage.table.core.windows.net/"), new DefaultAzureCredential());
+        })
+        .UseMigrationAzureTableReminderStorage("destination", options =>
+        {
+            options.TableName = "migratedreminders";
+            options.ConfigureTableServiceClient(new Uri("https://dmkorolevstorage.table.core.windows.net/"), new DefaultAzureCredential());
+        })
+        .UseMigrationReminderTable(options =>
+        {
+            options.SourceReminderTable = "source";
+            options.DestinationReminderTable = "destination";
+
+            options.Mode = ReminderMigrationMode.ReadSource_WriteBoth;
+        });
 });
 
 var app = builder.Build();
@@ -97,7 +98,7 @@ app.MapGet("/upd/{grainId}", async (IClusterClient grains, int grainId) =>
 });
 
 
-app.MapGet("/get/{grainId}", async (IClusterClient grains, int grainId) =>
+app.MapGet("/grains/{grainId}", async (IClusterClient grains, int grainId) =>
 {
     var grain = grains.GetGrain<ISimplePersistentMigrationGrain>(grainId);
 
