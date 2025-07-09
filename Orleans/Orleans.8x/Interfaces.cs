@@ -1,9 +1,37 @@
-﻿
+﻿using Orleans;
 using Orleans.Runtime;
 using Orleans.Timers;
 
 namespace Tester.AzureUtils.Migration.Grains
 {
+    // Event data models
+    [GenerateSerializer]
+    public record TemperatureReading(
+        [property: Id(0)] string SensorId,
+        [property: Id(1)] double Temperature,
+        [property: Id(2)] DateTime Timestamp
+    );
+
+    [GenerateSerializer]
+    public record HumidityReading(
+        [property: Id(0)] string SensorId,
+        [property: Id(1)] double Humidity,
+        [property: Id(2)] DateTime Timestamp
+    );
+
+    // Grain interfaces
+    public interface IEventProducerGrain : IGrainWithIntegerKey
+    {
+        Task StartProducing();
+        Task StopProducing();
+    }
+
+    public interface IEventConsumerGrain : IGrainWithIntegerKey
+    {
+        Task StartConsuming();
+        Task StopConsuming();
+    }
+
     /// <summary>
     /// mock grain interface for migration tests
     /// </summary>

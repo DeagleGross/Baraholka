@@ -1,6 +1,9 @@
+using Microsoft.Extensions.Hosting;
 using Orleans;
 using Orleans.Hosting;
 using Orleans.Runtime;
+using Orleans.Streams;
+using Orleans3x.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,30 @@ builder.Host.UseOrleans(static siloBuilder =>
 {
     siloBuilder.UseLocalhostClustering();
     siloBuilder.AddMemoryGrainStorage("urls");
+
+    siloBuilder
+        .AddAzureQueueStreams(
+            "AzureQueueProvider",
+            configurator =>
+            {
+                configurator.ConfigureAzureQueue(ob => ob.Configure(options =>
+                {
+                    // Use Azurite for local development
+                    options.ConfigureQueueServiceClient("UseDevelopmentStorage=true");
+                    options.QueueNames = new List<string>
+                    {
+                        "stream-3x"
+                    };
+                }));
+
+                configurator.ConfigureCacheSize(1024);
+                configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
+                {
+                    options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(100);
+                }));
+            })
+        // Add memory grain storage for PubSub subscriptions
+        .AddMemoryGrainStorage("PubSubStore");
 });
 
 using var app = builder.Build();
@@ -54,7 +81,29 @@ app.MapGet("/go/{shortenedRouteSegment:required}", static async (IGrainFactory g
     return Results.Redirect(redirectBuilder.Uri.ToString());
 });
 
-app.Run();
+await app.StartAsync();
+
+var streamProvider = app.Services.GetRequiredServiceByName<IStreamProvider>("AzureQueueProvider");
+var stream = streamProvider.GetStream<TemperatureReading>(Guid.NewGuid(), "qwe");
+
+// STREAMING
+var grainFactory = app.Services.GetRequiredService<IGrainFactory>();
+
+// Create producer and consumer grains
+var producerGrain = grainFactory.GetGrain<IEventProducerGrain>(0);
+//var consumerGrain = grainFactory.GetGrain<IEventConsumerGrain>(0);
+
+//// Start consumer (it will subscribe to the stream)
+//await consumerGrain.StartConsuming();
+
+// Start producing events
+await producerGrain.StartProducing();
+
+// Keep the application running
+Console.WriteLine("Press any key to stop producing events and exit...");
+Console.ReadKey();
+
+await app.StopAsync();
 
 public interface IUrlShortenerGrain : IGrainWithStringKey
 {

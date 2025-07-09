@@ -1,0 +1,6 @@
+@BindingRepro_HostAddress = http://localhost:5001
+
+GET {{BindingRepro_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

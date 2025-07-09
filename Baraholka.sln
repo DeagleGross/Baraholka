@@ -37,6 +37,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Orleans", "Orleans", "{4C47
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemoryOrleans", "Orleans\MemoryOrleans\MemoryOrleans.csproj", "{B7FE6C32-E7BE-4134-ADD1-0D6F197FB949}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BindingRepro", "BindingRepro\BindingRepro.csproj", "{68A86888-6EDE-4196-9771-DF79F662CA2D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,10 @@ Global
 		{B7FE6C32-E7BE-4134-ADD1-0D6F197FB949}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7FE6C32-E7BE-4134-ADD1-0D6F197FB949}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7FE6C32-E7BE-4134-ADD1-0D6F197FB949}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68A86888-6EDE-4196-9771-DF79F662CA2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68A86888-6EDE-4196-9771-DF79F662CA2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68A86888-6EDE-4196-9771-DF79F662CA2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68A86888-6EDE-4196-9771-DF79F662CA2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

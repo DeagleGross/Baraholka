@@ -1,8 +1,15 @@
 // <configuration>
 using Azure.Identity;
+using Microsoft.Extensions.Hosting;
 using Orleans._8x;
 using Orleans.Timers;
 using Tester.AzureUtils.Migration.Grains;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Orleans.Hosting;
+using Orleans.Configuration;
+using Orleans.Streams;
+using Orleans;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +29,39 @@ builder.Host.UseOrleans(static siloBuilder =>
     });
 
     siloBuilder.UseAzureTableReminderService("UseDevelopmentStorage=true");
+
+    //siloBuilder
+    //    .AddAzureQueueStreams(
+    //        name: "AzureQueueStreamProvider",
+    //        b => b.ConfigureAzureQueue(ob => ob.Configure(options =>
+    //        {
+    //            options.QueueServiceClient = new Azure.Storage.Queues.QueueServiceClient(new Uri("https://dmkorolevstorage.queue.core.windows.net"), new DefaultAzureCredential());
+    //            options.QueueNames = new List<string> { "myqueue-81", "myqueue-82", "myqueue-83" };
+    //        })));
+
+    siloBuilder
+        .AddAzureQueueStreams(
+            "AzureQueueProvider",
+            configurator =>
+            {
+                configurator.ConfigureAzureQueue(ob => ob.Configure(options =>
+                {
+                    // Use Azurite for local development
+                    options.ConfigureQueueServiceClient("UseDevelopmentStorage=true");
+                    options.QueueNames = new List<string>
+                    {
+                        "stream-8x-1", "stream-8x-2", "stream-8x-3", "stream-8x-4"
+                    };
+                }));
+
+                configurator.ConfigureCacheSize(1024);
+                configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
+                {
+                    options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(100);
+                }));
+            })
+        // Add memory grain storage for PubSub subscriptions
+        .AddMemoryGrainStorage("PubSubStore");
 });
 
 using var app = builder.Build();
@@ -74,7 +114,26 @@ app.MapGet("/standard/create/{grainId}", static async (IGrainFactory grains, int
     return RespondGrain(grain);
 });
 
-app.Run();
+await app.StartAsync();
+
+// STREAMING
+var grainFactory = app.Services.GetRequiredService<IGrainFactory>();
+
+// Create producer and consumer grains
+var producerGrain = grainFactory.GetGrain<IEventProducerGrain>(0);
+//var consumerGrain = grainFactory.GetGrain<IEventConsumerGrain>(0);
+
+//// Start consumer (it will subscribe to the stream)
+//await consumerGrain.StartConsuming();
+
+// Start producing events
+await producerGrain.StartProducing();
+
+// Keep the application running
+Console.WriteLine("Press any key to stop producing events and exit...");
+Console.ReadKey();
+
+await app.StopAsync();
 
 static async Task<IResult> ResolveAndOutputReminder(IGrainFactory grains, IReminderService service, int grainId)
 {
