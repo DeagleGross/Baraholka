@@ -1,3 +1,4 @@
+﻿using Microsoft.Extensions.Configuration;
 using System.Runtime.InteropServices;
 
 Console.WriteLine($".NET Runtime Version: {RuntimeInformation.FrameworkDescription}");
@@ -6,24 +7,19 @@ Console.WriteLine($"Process Architecture: {RuntimeInformation.ProcessArchitectur
 Console.WriteLine($"OS Architecture: {RuntimeInformation.OSArchitecture}");
 Console.WriteLine("---");
 
-Environment.SetEnvironmentVariable("ConnectionString", "environment variable value");
+var configurationManager = new ConfigurationManager();
+configurationManager.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+configurationManager.AddInMemoryCollection([new KeyValuePair<string, string?>("ConnectionString", "expected value")]);
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Load custom configuration
 var appSettings = new AppSettings();
-builder.Configuration.Bind(appSettings);
+configurationManager.Bind(appSettings);
 
-var app = builder.Build();
-
-var builderConfigConnectionString = builder.Configuration.AsEnumerable()
+var builderConfigConnectionString = configurationManager.AsEnumerable()
     .First(x => x.Key == "ConnectionString");
 
-Console.WriteLine("builder.Configuration[\"ConnectionString\"]: " + builderConfigConnectionString.Value);
+Console.WriteLine("configurationManager[\"ConnectionString\"]: " + builderConfigConnectionString.Value);
 Console.WriteLine("AppSettings.ConnectionString: " + appSettings.ConnectionString);
 
-app.MapGet("/", () => Results.Ok("OK!"));
-app.Run();
 
 public class AppSettings
 {
@@ -38,6 +34,6 @@ public class AppSettings
     Process Architecture: X64
     OS Architecture: X64
     ---
-    builder.Configuration["ConnectionString"]: environment variable value
-    AppSettings.ConnectionString: appsettings value
+    configurationManager["ConnectionString"]: expected value
+    AppSettings.ConnectionString: expected value
  */
