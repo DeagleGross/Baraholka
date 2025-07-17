@@ -1,4 +1,5 @@
 using Azure.Storage.Blobs;
+using Azure.Storage.Queues;
 using Microsoft.Extensions.Azure;
 using System.Text.Json;
 
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 builder.AddAzureBlobServiceClient("blobs");
+builder.AddAzureQueueServiceClient("queues");
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -43,6 +45,24 @@ app.MapGet("/blobs", (BlobServiceClient client) =>
 app.MapGet("/blobs/{id}", (BlobServiceClient client, string id) =>
 {
     return client.CreateBlobContainer(id);
+});
+
+app.MapGet("/queues", (QueueServiceClient client) =>
+{
+    var res = new List<string>();
+
+    var queues = client.GetQueues();
+    foreach (var queue in queues)
+    {
+        res.Add(JsonSerializer.Serialize(queue, new JsonSerializerOptions() { WriteIndented = true }));
+    }
+
+    return res;
+});
+
+app.MapGet("/queues/{id}", (QueueServiceClient client, string id) =>
+{
+    return client.CreateQueue(id);
 });
 
 
