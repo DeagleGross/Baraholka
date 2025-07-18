@@ -8,13 +8,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AspireDF.ServiceDefaults\AspireDF.ServiceDefaults.csproj" />
+	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-
-    <PackageReference Include="Aspire.Azure.Storage.Queues" Version="9.4.0-preview.1.25367.1" />
-	<PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.4.0-preview.1.25367.1" />
+	<PackageReference Include="Aspire.Azure.AI.Inference" Version="9.4.0-preview.1.25367.23" />
+    <PackageReference Include="Aspire.Azure.Storage.Queues" Version="9.4.0-preview.1.25367.23" />
+	<PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.4.0-preview.1.25367.23" />
   </ItemGroup>
 
 </Project>
