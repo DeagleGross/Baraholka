@@ -5,10 +5,14 @@ var db = builder.AddPostgres("pgsql").AddDatabase("db");
 var apiService = builder.AddProject<Projects.AspireStarter_ApiService>("apiservice")
     .WaitFor(db)
     .WithCommand("cmd", "command display", async ctx => {
+        Console.WriteLine("command execution started");
+        await Task.Delay(5000);
         Console.WriteLine("command execution");
         return new ExecuteCommandResult { Success = true };
     }, new CommandOptions())
     .WithCommand("cmd2", "command display 2", async ctx => {
+        Console.WriteLine("command execution 2 started");
+        await Task.Delay(3000);
         Console.WriteLine("command execution 2");
         return new ExecuteCommandResult { Success = true };
     }, new CommandOptions());

@@ -1,24 +1,45 @@
-﻿// Log GC collection counts for each generation
-for (int gen = 0; gen <= GC.MaxGeneration; gen++)
+﻿// Original interface without DIM
+public interface IProcessor
 {
-    Console.WriteLine($"Gen {gen} collection count: {GC.CollectionCount(gen)}");
+    string Process(string input);
+
+    // NEW: Default Interface Method added
+    string Process(ReadOnlySpan<char> input)
+    {
+        // Default implementation that converts span to string
+        return Process(input.ToString());
+    }
 }
 
-// Get GC memory info and log with explanations
-// Get GC memory info and log with explanations
-var memoryInfo = GC.GetGCMemoryInfo();
-Console.WriteLine("\nGC Memory Info:");
-Console.WriteLine($"HeapSizeBytes: {memoryInfo.HeapSizeBytes} (Total heap size in bytes)");
-Console.WriteLine($"FragmentedBytes: {memoryInfo.FragmentedBytes} (Bytes of fragmented space in the heap)");
-Console.WriteLine($"HighMemoryLoadThresholdBytes: {memoryInfo.HighMemoryLoadThresholdBytes} (Threshold for high memory load)");
-Console.WriteLine($"MemoryLoadBytes: {memoryInfo.MemoryLoadBytes} (Current memory load in bytes)");
-Console.WriteLine($"TotalAvailableMemoryBytes: {memoryInfo.TotalAvailableMemoryBytes} (Total available memory for the GC)");
-Console.WriteLine($"Index: {memoryInfo.Index} (GC index for the most recent GC)");
-Console.WriteLine($"Generation: {memoryInfo.Generation} (Generation of the most recent GC)");
-Console.WriteLine($"Compacted: {memoryInfo.Compacted} (Whether the most recent GC was compacting)");
-Console.WriteLine($"Concurrent: {memoryInfo.Concurrent} (Whether the most recent GC was concurrent)");
-Console.WriteLine($"FinalizationPendingCount: {memoryInfo.FinalizationPendingCount} (Objects pending finalization)");
-Console.WriteLine($"PauseTimePercentage: {memoryInfo.PauseTimePercentage} (GC pause time as a percentage)");
-Console.WriteLine($"PromotedBytes: {memoryInfo.PromotedBytes} (Bytes promoted to an older generation)");
-Console.WriteLine($"PinnedObjectsCount: {memoryInfo.PinnedObjectsCount} (Number of pinned objects)");
-// Removed CommittedBytes and ReservedBytes as they are not available
+// User's implementation
+public class MyProcessor : IProcessor
+{
+    public string Process(string input)
+    {
+        return $"Processed: {input}";
+    }
+
+    // User added their own method with the same signature
+    // that they plan to add to the interface later
+    public string Process(ReadOnlySpan<char> input)
+    {
+        return $"Span Processed: {input}";
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        var processor = new MyProcessor();
+
+        // BREAKING CHANGE: This now calls the DIM instead of user's method!
+        IProcessor iProcessor = processor;
+        string result = iProcessor.Process("test".AsSpan());
+        Console.WriteLine(result); // Output: "Processed: test" (DIM called user's string method)
+
+        // Direct call still works as before
+        string directResult = processor.Process("test".AsSpan());
+        Console.WriteLine(directResult); // Output: "Span Processed: test"
+    }
+}

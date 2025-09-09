@@ -1,0 +1,6 @@
+@CosmosDbAsyncNotSupportedRepro_HostAddress = http://localhost:5122
+
+GET {{CosmosDbAsyncNotSupportedRepro_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
