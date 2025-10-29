@@ -7,7 +7,7 @@ namespace Benchmarks
     [MemoryDiagnoser]
     public class DataProtectionBenchmarks
     {
-        private IDataProtector _dataProtector;
+        private Microsoft.AspNetCore.DataProtection.IDataProtector _dataProtector;
         const string AntiforgeryTokenSample = "CfDJ8H5oH_fp1QNBmvs-OWXxsVoV30hrXeI4-PI4p1VZytjsgd0DTstMdtTZbFtm2dKHvsBlDCv7TiEWKztZf8fb48pUgBgUE2SeYV3eOUXvSfNWU0D8SmHLy5KEnwKKkZKqudDhCnjQSIU7mhDliJJN1e4";
 
         string _protectedData;
