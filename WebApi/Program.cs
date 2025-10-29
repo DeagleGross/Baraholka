@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,32 +6,20 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
+app.UseHttpsRedirection();
+
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/", () => {
-    var response = $"""
-        OK!  
-        Process: {RuntimeInformation.ProcessArchitecture};
-        OS: {RuntimeInformation.OSArchitecture};
-        Is64Bit: {Environment.Is64BitProcess};
-    """;
-
-    return Results.Json(response);
-});
-app.MapGet("/health", () => """
+app.MapGet("/weatherforecast", () =>
 {
-    "status": "Healthy",
-    "uptime": "72 hours",
-    "version": "1.0.0"
-}
-""");
+});
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
+    var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -44,9 +30,11 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 });
 
+
+
 app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
