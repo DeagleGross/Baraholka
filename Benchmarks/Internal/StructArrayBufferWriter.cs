@@ -8,7 +8,7 @@ namespace Benchmarks.Internal
     /// A high-performance struct-based IBufferWriter&lt;byte&gt; implementation that uses ArrayPool for allocations.
     /// Designed for zero-allocation scenarios when used with generic methods via `allows ref struct` constraint.
     /// </summary>
-    public struct StructArrayBufferWriter : IBufferWriter<byte>, IDisposable
+    public ref struct StructArrayBufferWriter : IBufferWriter<byte>, IDisposable
     {
         private byte[] _buffer;
         private int _index;
@@ -90,7 +90,7 @@ namespace Benchmarks.Internal
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
             ThrowIfDisposed();
-            return _buffer.AsMemory(_index, sizeHint);
+            return _buffer.AsMemory(_index);
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Benchmarks.Internal
         public Span<byte> GetSpan(int sizeHint = 0)
         {
             ThrowIfDisposed();
-            return _buffer.AsSpan(_index, sizeHint);
+            return _buffer.AsSpan(_index);
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace Benchmarks.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThrowIfDisposed()
         {
-            ObjectDisposedException.ThrowIf(_buffer is null, this);
+            ObjectDisposedException.ThrowIf(_buffer is null, null!);
         }
     }
 }
