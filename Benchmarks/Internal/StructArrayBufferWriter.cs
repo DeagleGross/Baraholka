@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Benchmarks.Internal
@@ -8,173 +9,156 @@ namespace Benchmarks.Internal
     /// A high-performance struct-based IBufferWriter&lt;byte&gt; implementation that uses ArrayPool for allocations.
     /// Designed for zero-allocation scenarios when used with generic methods via `allows ref struct` constraint.
     /// </summary>
-    public ref struct StructArrayBufferWriter : IBufferWriter<byte>, IDisposable
+    public ref struct StructArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
-        private byte[] _buffer;
+        private T[] _rentedBuffer;
+        private Span<T> _initialBuffer;
         private int _index;
 
-        /// <summary>
-        /// Initializes a new instance of StructArrayBufferWriter with a specified initial capacity.
-        /// </summary>
-        /// <param name="initialCapacity">The initial capacity to rent from the ArrayPool.</param>
-        public StructArrayBufferWriter(int initialCapacity)
-        {
-            ArgumentOutOfRangeException.ThrowIfLessThan(initialCapacity, 1, nameof(initialCapacity));
+        private const int MinimumBufferSize = 256;
 
-            _buffer = ArrayPool<byte>.Shared.Rent(initialCapacity);
+        public StructArrayBufferWriter(Span<T> initialBuffer)
+        {
             _index = 0;
+            _initialBuffer = initialBuffer;
+            _rentedBuffer = null!;
         }
 
-        /// <summary>
-        /// Clears the buffer contents and returns the rented array to the ArrayPool.
-        /// This must be called to properly clean up resources.
-        /// </summary>
-        public void Dispose()
+        public ReadOnlySpan<T> WrittenSpan
         {
-            if (_buffer == null)
-                return;
-
-            // Optionally clear the buffer before returning to pool (security)
-            // Uncomment if needed for sensitive data:
-            // _buffer.AsSpan(0, _index).Clear();
-
-            ArrayPool<byte>.Shared.Return(_buffer, clearArray: false);
-            _buffer = null!;
-        }
-
-        /// <summary>
-        /// Gets the number of bytes written to the buffer.
-        /// </summary>
-        public int WrittenCount
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                ThrowIfDisposed();
+                CheckIfDisposed();
+                return _initialBuffer.Slice(0, _index);
+            }
+        }
+
+        public int WrittenCount
+        {
+            get
+            {
+                CheckIfDisposed();
                 return _index;
             }
         }
 
-        /// <summary>
-        /// Gets the capacity of the underlying buffer.
-        /// </summary>
         public int Capacity
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                ThrowIfDisposed();
-                return _buffer.Length;
+                CheckIfDisposed();
+                return _initialBuffer.Length;
             }
         }
 
-        /// <summary>
-        /// Gets the available space remaining in the buffer.
-        /// </summary>
         public int FreeCapacity
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                ThrowIfDisposed();
-                return _buffer.Length - _index;
+                CheckIfDisposed();
+                return _initialBuffer.Length - _index;
             }
         }
 
-        /// <summary>
-        /// Gets a memory segment representing the available space for writing.
-        /// </summary>
-        /// <param name="sizeHint">A hint about the minimum size needed. Ignored in this implementation as resizing is not performed.</param>
-        /// <returns>A Memory&lt;byte&gt; segment for the available space.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Memory<byte> GetMemory(int sizeHint = 0)
+        public void Clear()
         {
-            ThrowIfDisposed();
-            return _buffer.AsMemory(_index);
+            CheckIfDisposed();
+            ClearHelper();
         }
 
-        /// <summary>
-        /// Gets a span representing the available space for writing.
-        /// </summary>
-        /// <param name="sizeHint">A hint about the minimum size needed. Ignored in this implementation as resizing is not performed.</param>
-        /// <returns>A Span&lt;byte&gt; for the available space.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<byte> GetSpan(int sizeHint = 0)
+        private void ClearHelper()
         {
-            ThrowIfDisposed();
-            return _buffer.AsSpan(_index);
+            // _initialBuffer.Clear();
+            // _index = 0;
         }
 
-        /// <summary>
-        /// Advances the write position by the specified count.
-        /// </summary>
-        /// <param name="count">The number of bytes written.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if count is negative.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if advancing would exceed buffer capacity.</exception>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // Returns the rented buffer back to the pool
+        public void Dispose()
+        {
+            ClearHelper();
+            //ArrayPool<T>.Shared.Return(_initialBuffer);
+            //_initialBuffer = null!;
+        }
+
+        private void CheckIfDisposed()
+        {
+            //if (_initialBuffer == null)
+            //{
+            //    ThrowObjectDisposedException();
+            //}
+        }
+
+        private static void ThrowObjectDisposedException()
+        {
+            throw new ObjectDisposedException(nameof(ArrayBufferWriter<T>));
+        }
+
         public void Advance(int count)
         {
-            ThrowIfDisposed();
+            CheckIfDisposed();
 
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be negative.");
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
 
-            if (_index > _buffer.Length - count)
-                throw new InvalidOperationException($"Cannot advance past the end of the buffer. Current position: {_index}, Capacity: {_buffer.Length}, Requested advance: {count}.");
+            if (_index > _initialBuffer.Length - count)
+            {
+                ThrowInvalidOperationException(_initialBuffer.Length);
+            }
 
             _index += count;
         }
 
-        /// <summary>
-        /// Gets a span of the written data.
-        /// </summary>
-        public ReadOnlySpan<byte> WrittenSpan
+        public Span<T> GetSpan(int sizeHint = 0)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
+            CheckIfDisposed();
+
+            CheckAndResizeBuffer(sizeHint);
+            return _initialBuffer.Slice(_index);
+        }
+
+        public Memory<T> GetMemory(int sizeHint = 0)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void CheckAndResizeBuffer(int sizeHint)
+        {
+            Debug.Assert(_initialBuffer != null);
+
+            ArgumentOutOfRangeException.ThrowIfNegative(sizeHint);
+
+            if (sizeHint == 0)
             {
-                ThrowIfDisposed();
-                return _buffer.AsSpan(0, _index);
+                sizeHint = MinimumBufferSize;
             }
+
+            var availableSpace = _initialBuffer.Length - _index;
+
+            //if (sizeHint > availableSpace)
+            //{
+            //    var growBy = Math.Max(sizeHint, _initialBuffer.Length);
+
+            //    var newSize = checked(_initialBuffer.Length + growBy);
+
+            //    var oldBuffer = _initialBuffer;
+
+            //    _initialBuffer = ArrayPool<T>.Shared.Rent(newSize);
+
+            //    Debug.Assert(oldBuffer.Length >= _index);
+            //    Debug.Assert(_initialBuffer.Length >= _index);
+
+            //    var previousBuffer = oldBuffer.AsSpan(0, _index);
+            //    previousBuffer.CopyTo(_initialBuffer);
+            //    previousBuffer.Clear();
+            //    ArrayPool<T>.Shared.Return(oldBuffer);
+            //}
+
+            Debug.Assert(_initialBuffer.Length - _index > 0);
+            Debug.Assert(_initialBuffer.Length - _index >= sizeHint);
         }
 
-        /// <summary>
-        /// Gets a memory segment of the written data.
-        /// </summary>
-        public ReadOnlyMemory<byte> WrittenMemory
+        private static void ThrowInvalidOperationException(int capacity)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                ThrowIfDisposed();
-                return _buffer.AsMemory(0, _index);
-            }
-        }
-
-        /// <summary>
-        /// Clears the buffer, resetting the write position to zero without deallocating.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Clear()
-        {
-            ThrowIfDisposed();
-            _index = 0;
-        }
-
-        /// <summary>
-        /// Resets the writer state, returning the buffer to the pool if it exists.
-        /// Useful when reusing the struct in a loop.
-        /// </summary>
-        public void Reset()
-        {
-            Dispose();
-            _index = 0;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ThrowIfDisposed()
-        {
-            ObjectDisposedException.ThrowIf(_buffer is null, null!);
+            throw new InvalidOperationException($"Cannot advance past the end of the buffer, which has a size of {capacity}.");
         }
     }
 }

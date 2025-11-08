@@ -1,5 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnostics.Windows.Configs;
+using BenchmarkDotNet.Exporters;
 using Benchmarks.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using System;
@@ -17,33 +19,33 @@ namespace Benchmarks
           [Host]     : .NET 10.0.0 (10.0.25.50307), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
           DefaultJob : .NET 10.0.0 (10.0.25.50307), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
 
-        | Method                                                 | _bytesToFillCount | Mean      | Error     | StdDev    | Median    | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
-        |------------------------------------------------------- |------------------ |----------:|----------:|----------:|----------:|------:|--------:|-------:|----------:|------------:|
-        | FullyManualWithPooling                                 | 25                |  8.358 ns | 0.1857 ns | 0.3876 ns |  8.196 ns |  0.92 |    0.07 |      - |         - |        0.00 |
-        | Default                                                | 25                |  9.112 ns | 0.2262 ns | 0.6526 ns |  8.877 ns |  1.00 |    0.10 | 0.0008 |      64 B |        1.00 |
-        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 25                | 28.799 ns | 0.5890 ns | 0.8816 ns | 28.637 ns |  3.18 |    0.23 | 0.0018 |     136 B |        2.12 |
-        | Span_PooledArrayBufferWriter                           | 25                | 20.684 ns | 0.4257 ns | 0.8501 ns | 20.437 ns |  2.28 |    0.18 | 0.0004 |      32 B |        0.50 |
-        | Span_StructPooledArrayBufferWriter                     | 25                | 12.568 ns | 0.2706 ns | 0.3793 ns | 12.434 ns |  1.39 |    0.10 |      - |         - |        0.00 |
-        | RefSpan_StructPooledArrayBufferWriter                  | 25                | 18.984 ns | 0.3924 ns | 0.6556 ns | 18.722 ns |  2.09 |    0.16 |      - |         - |        0.00 |
-        |                                                        |                   |           |           |           |           |       |         |        |           |             |
-        | FullyManualWithPooling                                 | 50                | 12.144 ns | 0.2375 ns | 0.2221 ns | 12.039 ns |  1.11 |    0.05 |      - |         - |        0.00 |
-        | Default                                                | 50                | 10.976 ns | 0.2386 ns | 0.5187 ns | 10.816 ns |  1.00 |    0.07 | 0.0011 |      88 B |        1.00 |
-        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 50                | 29.892 ns | 0.5503 ns | 0.4595 ns | 29.818 ns |  2.73 |    0.13 | 0.0020 |     160 B |        1.82 |
-        | Span_PooledArrayBufferWriter                           | 50                | 20.069 ns | 0.4129 ns | 0.6306 ns | 19.883 ns |  1.83 |    0.10 | 0.0004 |      32 B |        0.36 |
-        | Span_StructPooledArrayBufferWriter                     | 50                | 13.079 ns | 0.2822 ns | 0.5300 ns | 12.836 ns |  1.19 |    0.07 |      - |         - |        0.00 |
-        | RefSpan_StructPooledArrayBufferWriter                  | 50                | 13.999 ns | 0.2065 ns | 0.1724 ns | 13.969 ns |  1.28 |    0.06 |      - |         - |        0.00 |
-        |                                                        |                   |           |           |           |           |       |         |        |           |             |
-        | FullyManualWithPooling                                 | 120               |  8.534 ns | 0.1493 ns | 0.1247 ns |  8.500 ns |  0.56 |    0.03 |      - |         - |        0.00 |
-        | Default                                                | 120               | 15.311 ns | 0.2985 ns | 0.7598 ns | 15.126 ns |  1.00 |    0.07 | 0.0021 |     160 B |        1.00 |
-        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 120               | 35.321 ns | 0.6023 ns | 0.7397 ns | 35.183 ns |  2.31 |    0.12 | 0.0030 |     232 B |        1.45 |
-        | Span_PooledArrayBufferWriter                           | 120               | 21.018 ns | 0.4332 ns | 0.6616 ns | 20.845 ns |  1.38 |    0.08 | 0.0004 |      32 B |        0.20 |
-        | Span_StructPooledArrayBufferWriter                     | 120               | 12.910 ns | 0.2486 ns | 0.2076 ns | 12.859 ns |  0.85 |    0.04 |      - |         - |        0.00 |
-        | RefSpan_StructPooledArrayBufferWriter                  | 120               | 13.849 ns | 0.2975 ns | 0.3426 ns | 13.714 ns |  0.91 |    0.05 |      - |         - |        0.00 |
+        | Method                                                 | _bytesToFillCount | Mean      | Error     | StdDev    | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
+        |------------------------------------------------------- |------------------ |----------:|----------:|----------:|------:|--------:|-------:|----------:|------------:|
+        | FullyManualWithStackalloc                              | 25                |  4.159 ns | 0.0957 ns | 0.0895 ns |  0.43 |    0.01 |      - |         - |        0.00 |
+        | FullyManualWithPooling                                 | 25                |  9.008 ns | 0.1983 ns | 0.2715 ns |  0.93 |    0.03 |      - |         - |        0.00 |
+        | Default                                                | 25                |  9.724 ns | 0.2137 ns | 0.1999 ns |  1.00 |    0.03 | 0.0031 |      64 B |        1.00 |
+        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 25                | 30.462 ns | 0.6220 ns | 0.7866 ns |  3.13 |    0.10 | 0.0017 |     136 B |        2.12 |
+        | Span_PooledArrayBufferWriter                           | 25                | 14.928 ns | 0.2911 ns | 0.2431 ns |  1.54 |    0.04 | 0.0004 |      32 B |        0.50 |
+        | Span_StructPooledArrayBufferWriter                     | 25                |  9.171 ns | 0.0721 ns | 0.0674 ns |  0.94 |    0.02 |      - |         - |        0.00 |
+        |                                                        |                   |           |           |           |       |         |        |           |             |
+        | FullyManualWithStackalloc                              | 50                |  4.857 ns | 0.1037 ns | 0.1645 ns |  0.40 |    0.02 |      - |         - |        0.00 |
+        | FullyManualWithPooling                                 | 50                |  9.222 ns | 0.1716 ns | 0.1521 ns |  0.76 |    0.04 |      - |         - |        0.00 |
+        | Default                                                | 50                | 12.100 ns | 0.2629 ns | 0.5660 ns |  1.00 |    0.06 | 0.0011 |      88 B |        1.00 |
+        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 50                | 33.515 ns | 0.6683 ns | 0.6251 ns |  2.78 |    0.13 | 0.0021 |     160 B |        1.82 |
+        | Span_PooledArrayBufferWriter                           | 50                | 16.003 ns | 0.3255 ns | 0.2886 ns |  1.33 |    0.06 | 0.0004 |      32 B |        0.36 |
+        | Span_StructPooledArrayBufferWriter                     | 50                |  9.338 ns | 0.1039 ns | 0.0921 ns |  0.77 |    0.04 |      - |         - |        0.00 |
+        |                                                        |                   |           |           |           |       |         |        |           |             |
+        | FullyManualWithStackalloc                              | 120               |  6.511 ns | 0.0726 ns | 0.0606 ns |  0.35 |    0.01 |      - |         - |        0.00 |
+        | FullyManualWithPooling                                 | 120               |  9.329 ns | 0.1948 ns | 0.1626 ns |  0.50 |    0.01 |      - |         - |        0.00 |
+        | Default                                                | 120               | 18.769 ns | 0.3851 ns | 0.3602 ns |  1.00 |    0.03 | 0.0021 |     160 B |        1.00 |
+        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 120               | 43.345 ns | 0.8264 ns | 1.3807 ns |  2.31 |    0.09 | 0.0030 |     232 B |        1.45 |
+        | Span_PooledArrayBufferWriter                           | 120               | 16.928 ns | 0.3292 ns | 0.4927 ns |  0.90 |    0.03 | 0.0004 |      32 B |        0.20 |
+        | Span_StructPooledArrayBufferWriter                     | 120               | 11.022 ns | 0.2392 ns | 0.2754 ns |  0.59 |    0.02 |      - |         - |        0.00 |
 
      */
 
     [MemoryDiagnoser]
-    // [EtwProfiler]
+    [Config(typeof(Config))]
     public class DIMvsDedicatedImplementation
     {
         [Params(25, 50, 120)]
@@ -54,7 +56,6 @@ namespace Benchmarks
 
         private IMyDataProtector _simpleProtector;
         private ISpanMyDataProtector _spanProtector;
-        private ISpanRefMyDataProtector _spanRefProtector;
 
         [GlobalSetup]
         public void Setup()
@@ -64,12 +65,21 @@ namespace Benchmarks
 
             _simpleProtector = new SimpleProtector(_bytesToFill);
             _spanProtector = new SpanProtector(_bytesToFill);
-            _spanRefProtector = new SpanRefProtector(_bytesToFill);
 
             _plainText = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         }
 
-        // whatever i can do without any underlying types. The maximum speed we can reach.
+        // whatever i can do without any underlying types
+        [Benchmark]
+        public unsafe int FullyManualWithStackalloc()
+        {
+            Span<byte> rent = stackalloc byte[_plainText.Length + _bytesToFill.Length];
+            _plainText.CopyTo(rent);
+            _bytesToFill.CopyTo(rent.Slice(_plainText.Length));
+            return rent.Length;
+        }
+
+        // whatever i can do without any underlying types
         [Benchmark]
         public int FullyManualWithPooling()
         {
@@ -95,41 +105,33 @@ namespace Benchmarks
             return result.Length;
         }
 
-        // default interface invocation with PooledArrayBufferWriter
         [Benchmark]
         public int DefaultInterfaceImplementation_PooledArrayBufferWriter()
         {
-            using var arrayBufferWriter = new PooledArrayBufferWriter<byte>(initialCapacity: _plainText.Length + _bytesToFillCount);
-            _simpleProtector.Protect(_plainText, arrayBufferWriter);
-            return arrayBufferWriter.WrittenCount;
+            using var buffer = new PooledArrayBufferWriter<byte>(initialCapacity: _plainText.Length + _bytesToFillCount);
+            _simpleProtector.Protect(_plainText, buffer);
+            return buffer.WrittenCount;
         }
 
         // an improved interface using Span<byte> with PooledArrayBufferWriter
         [Benchmark]
         public int Span_PooledArrayBufferWriter()
         {
-            using var arrayBufferWriter = new PooledArrayBufferWriter<byte>(initialCapacity: _plainText.Length + _bytesToFillCount);
-            _spanProtector.SpanProtect(_plainText, arrayBufferWriter);
-            return arrayBufferWriter.WrittenCount;
+            using var buffer = new PooledArrayBufferWriter<byte>(initialCapacity: _plainText.Length + _bytesToFillCount);
+            _spanProtector.SpanProtectNormal(_plainText, buffer);
+            return buffer.WrittenCount;
         }
 
         // an improved interface using Span<byte> with StructPooledArrayBufferWriter
         [Benchmark]
         public int Span_StructPooledArrayBufferWriter()
         {
-            using var arrayBufferWriter = new StructArrayBufferWriter(initialCapacity: _plainText.Length + _bytesToFillCount);
-            _spanProtector.SpanProtect(_plainText, arrayBufferWriter);
-            return arrayBufferWriter.WrittenCount;
-        }
-
-        [Benchmark]
-        public int RefSpan_StructPooledArrayBufferWriter()
-        {
-            var buffer = new StructArrayBufferWriter(initialCapacity: _plainText.Length + _bytesToFillCount);
+            Span<byte> bytes = stackalloc byte[_plainText.Length + _bytesToFillCount];
+            var buffer = new StructArrayBufferWriter<byte>(bytes);
             try
             {
-                _spanRefProtector.SpanProtect(_plainText, ref buffer);
-                return buffer.WrittenCount;
+                _spanProtector.SpanProtectGeneric(_plainText, ref buffer);
+                return buffer.WrittenSpan.Length;
             }
             finally
             {
@@ -153,12 +155,9 @@ namespace Benchmarks
 
     interface ISpanMyDataProtector : IMyDataProtector
     {
-        void SpanProtect<TWriter>(ReadOnlySpan<byte> plaintext, TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct;
-    }
+        void SpanProtectGeneric<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct;
 
-    interface ISpanRefMyDataProtector : IMyDataProtector
-    {
-        void SpanProtect<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct;
+        void SpanProtectNormal(ReadOnlySpan<byte> plaintext, IBufferWriter<byte> destination);
     }
 
     class SimpleProtector(byte[] _bytesToFill) : IMyDataProtector
@@ -180,7 +179,15 @@ namespace Benchmarks
     {
         public byte[] Protect(byte[] plaintext) => throw new NotImplementedException();
 
-        public void SpanProtect<TWriter>(ReadOnlySpan<byte> plaintext, TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
+        public void SpanProtectGeneric<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
+        {
+            var span = destination.GetSpan(sizeHint: plaintext.Length + _bytesToFill.Length);
+            plaintext.CopyTo(span);
+            _bytesToFill.CopyTo(span.Slice(plaintext.Length));
+            destination.Advance(plaintext.Length + _bytesToFill.Length);
+        }
+
+        public void SpanProtectNormal(ReadOnlySpan<byte> plaintext, IBufferWriter<byte> destination)
         {
             var span = destination.GetSpan(sizeHint: plaintext.Length + _bytesToFill.Length);
             plaintext.CopyTo(span);
@@ -188,17 +195,13 @@ namespace Benchmarks
             destination.Advance(plaintext.Length + _bytesToFill.Length);
         }
     }
+}
 
-    class SpanRefProtector(byte[] _bytesToFill) : ISpanRefMyDataProtector
+internal class Config : ManualConfig
+{
+    public Config()
     {
-        public byte[] Protect(byte[] plaintext) => throw new NotImplementedException();
-
-        public void SpanProtect<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
-        {
-            var span = destination.GetSpan(sizeHint: plaintext.Length + _bytesToFill.Length);
-            plaintext.CopyTo(span);
-            _bytesToFill.CopyTo(span.Slice(plaintext.Length));
-            destination.Advance(plaintext.Length + _bytesToFill.Length);
-        }
+        AddExporter(MarkdownExporter.GitHub);
+        // Don't add CsvExporter
     }
 }

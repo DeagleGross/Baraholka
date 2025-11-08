@@ -26,6 +26,15 @@ namespace Benchmarks.Internal
             _index = 0;
         }
 
+        public ReadOnlySpan<T> WrittenSpan
+        {
+            get
+            {
+                CheckIfDisposed();
+                return _rentedBuffer.AsSpan(0, _index);
+            }
+        }
+
         public ReadOnlyMemory<T> WrittenMemory
         {
             get
