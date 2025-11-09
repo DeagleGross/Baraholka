@@ -19,28 +19,31 @@ namespace Benchmarks
           [Host]     : .NET 10.0.0 (10.0.25.50307), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
           DefaultJob : .NET 10.0.0 (10.0.25.50307), X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI
 
-        | Method                                                 | _bytesToFillCount | Mean      | Error     | StdDev    | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
-        |------------------------------------------------------- |------------------ |----------:|----------:|----------:|------:|--------:|-------:|----------:|------------:|
-        | FullyManualWithStackalloc                              | 25                |  4.159 ns | 0.0957 ns | 0.0895 ns |  0.43 |    0.01 |      - |         - |        0.00 |
-        | FullyManualWithPooling                                 | 25                |  9.008 ns | 0.1983 ns | 0.2715 ns |  0.93 |    0.03 |      - |         - |        0.00 |
-        | Default                                                | 25                |  9.724 ns | 0.2137 ns | 0.1999 ns |  1.00 |    0.03 | 0.0031 |      64 B |        1.00 |
-        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 25                | 30.462 ns | 0.6220 ns | 0.7866 ns |  3.13 |    0.10 | 0.0017 |     136 B |        2.12 |
-        | Span_PooledArrayBufferWriter                           | 25                | 14.928 ns | 0.2911 ns | 0.2431 ns |  1.54 |    0.04 | 0.0004 |      32 B |        0.50 |
-        | Span_StructPooledArrayBufferWriter                     | 25                |  9.171 ns | 0.0721 ns | 0.0674 ns |  0.94 |    0.02 |      - |         - |        0.00 |
-        |                                                        |                   |           |           |           |       |         |        |           |             |
-        | FullyManualWithStackalloc                              | 50                |  4.857 ns | 0.1037 ns | 0.1645 ns |  0.40 |    0.02 |      - |         - |        0.00 |
-        | FullyManualWithPooling                                 | 50                |  9.222 ns | 0.1716 ns | 0.1521 ns |  0.76 |    0.04 |      - |         - |        0.00 |
-        | Default                                                | 50                | 12.100 ns | 0.2629 ns | 0.5660 ns |  1.00 |    0.06 | 0.0011 |      88 B |        1.00 |
-        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 50                | 33.515 ns | 0.6683 ns | 0.6251 ns |  2.78 |    0.13 | 0.0021 |     160 B |        1.82 |
-        | Span_PooledArrayBufferWriter                           | 50                | 16.003 ns | 0.3255 ns | 0.2886 ns |  1.33 |    0.06 | 0.0004 |      32 B |        0.36 |
-        | Span_StructPooledArrayBufferWriter                     | 50                |  9.338 ns | 0.1039 ns | 0.0921 ns |  0.77 |    0.04 |      - |         - |        0.00 |
-        |                                                        |                   |           |           |           |       |         |        |           |             |
-        | FullyManualWithStackalloc                              | 120               |  6.511 ns | 0.0726 ns | 0.0606 ns |  0.35 |    0.01 |      - |         - |        0.00 |
-        | FullyManualWithPooling                                 | 120               |  9.329 ns | 0.1948 ns | 0.1626 ns |  0.50 |    0.01 |      - |         - |        0.00 |
-        | Default                                                | 120               | 18.769 ns | 0.3851 ns | 0.3602 ns |  1.00 |    0.03 | 0.0021 |     160 B |        1.00 |
-        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 120               | 43.345 ns | 0.8264 ns | 1.3807 ns |  2.31 |    0.09 | 0.0030 |     232 B |        1.45 |
-        | Span_PooledArrayBufferWriter                           | 120               | 16.928 ns | 0.3292 ns | 0.4927 ns |  0.90 |    0.03 | 0.0004 |      32 B |        0.20 |
-        | Span_StructPooledArrayBufferWriter                     | 120               | 11.022 ns | 0.2392 ns | 0.2754 ns |  0.59 |    0.02 |      - |         - |        0.00 |
+        | Method                                                 | _bytesToFillCount | Mean      | Error     | StdDev    | Median    | Ratio | RatioSD | Gen0   | Gen1   | Gen2   | Allocated | Alloc Ratio |
+        |------------------------------------------------------- |------------------ |----------:|----------:|----------:|----------:|------:|--------:|-------:|-------:|-------:|----------:|------------:|
+        | FullyManualWithStackalloc                              | 25                |  3.976 ns | 0.0686 ns | 0.0608 ns |  3.965 ns |  0.43 |    0.02 |      - |      - |      - |         - |        0.00 |
+        | FullyManualWithPooling                                 | 25                |  8.327 ns | 0.1823 ns | 0.1522 ns |  8.334 ns |  0.89 |    0.03 |      - |      - |      - |         - |        0.00 |
+        | Default                                                | 25                |  9.365 ns | 0.2024 ns | 0.3325 ns |  9.283 ns |  1.00 |    0.05 | 0.0008 |      - |      - |      64 B |        1.00 |
+        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 25                | 27.528 ns | 0.5651 ns | 0.7922 ns | 27.264 ns |  2.94 |    0.13 | 0.0018 |      - |      - |     136 B |        2.12 |
+        | Span_PooledArrayBufferWriter                           | 25                | 13.389 ns | 0.2149 ns | 0.1794 ns | 13.377 ns |  1.43 |    0.05 | 0.0004 | 0.0000 | 0.0000 |         - |        0.00 |
+        | SpanCallingGeneric_PooledArrayBufferWriter             | 25                | 20.196 ns | 0.4176 ns | 0.6121 ns | 20.202 ns |  2.16 |    0.10 | 0.0004 |      - |      - |      32 B |        0.50 |
+        | Span_StructPooledArrayBufferWriter                     | 25                |  8.281 ns | 0.1821 ns | 0.3091 ns |  8.142 ns |  0.89 |    0.04 |      - |      - |      - |         - |        0.00 |
+        |                                                        |                   |           |           |           |           |       |         |        |        |        |           |             |
+        | FullyManualWithStackalloc                              | 80                |  6.523 ns | 0.1458 ns | 0.1497 ns |  6.509 ns |  0.54 |    0.03 |      - |      - |      - |         - |        0.00 |
+        | FullyManualWithPooling                                 | 80                |  8.774 ns | 0.1957 ns | 0.5190 ns |  8.643 ns |  0.73 |    0.05 |      - |      - |      - |         - |        0.00 |
+        | Default                                                | 80                | 12.103 ns | 0.2625 ns | 0.5594 ns | 12.025 ns |  1.00 |    0.06 | 0.0015 |      - |      - |     120 B |        1.00 |
+        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 80                | 31.685 ns | 0.6420 ns | 1.0366 ns | 31.530 ns |  2.62 |    0.14 | 0.0024 |      - |      - |     192 B |        1.60 |
+        | Span_PooledArrayBufferWriter                           | 80                | 14.531 ns | 0.3087 ns | 0.2888 ns | 14.449 ns |  1.20 |    0.06 | 0.0004 |      - |      - |      32 B |        0.27 |
+        | SpanCallingGeneric_PooledArrayBufferWriter             | 80                | 20.784 ns | 0.4354 ns | 0.8492 ns | 20.542 ns |  1.72 |    0.10 | 0.0004 |      - |      - |      32 B |        0.27 |
+        | Span_StructPooledArrayBufferWriter                     | 80                | 12.061 ns | 0.2540 ns | 0.2252 ns | 12.019 ns |  1.00 |    0.05 |      - |      - |      - |         - |        0.00 |
+        |                                                        |                   |           |           |           |           |       |         |        |        |        |           |             |
+        | FullyManualWithStackalloc                              | 120               |  5.600 ns | 0.1029 ns | 0.0912 ns |  5.593 ns |  0.39 |    0.02 |      - |      - |      - |         - |        0.00 |
+        | FullyManualWithPooling                                 | 120               |  8.279 ns | 0.1584 ns | 0.1404 ns |  8.206 ns |  0.58 |    0.02 |      - |      - |      - |         - |        0.00 |
+        | Default                                                | 120               | 14.289 ns | 0.3062 ns | 0.5599 ns | 14.118 ns |  1.00 |    0.05 | 0.0021 |      - |      - |     160 B |        1.00 |
+        | DefaultInterfaceImplementation_PooledArrayBufferWriter | 120               | 33.767 ns | 0.6961 ns | 0.9759 ns | 33.638 ns |  2.37 |    0.11 | 0.0030 |      - |      - |     232 B |        1.45 |
+        | Span_PooledArrayBufferWriter                           | 120               | 15.020 ns | 0.3026 ns | 0.3363 ns | 14.972 ns |  1.05 |    0.05 | 0.0004 |      - |      - |      32 B |        0.20 |
+        | SpanCallingGeneric_PooledArrayBufferWriter             | 120               | 22.212 ns | 0.4434 ns | 0.5766 ns | 22.104 ns |  1.56 |    0.07 | 0.0004 |      - |      - |      32 B |        0.20 |
+        | Span_StructPooledArrayBufferWriter                     | 120               |  9.752 ns | 0.1902 ns | 0.1779 ns |  9.779 ns |  0.68 |    0.03 |      - |      - |      - |         - |        0.00 |
 
      */
 
@@ -48,7 +51,7 @@ namespace Benchmarks
     [Config(typeof(Config))]
     public class DIMvsDedicatedImplementation
     {
-        [Params(25, 50, 120)]
+        [Params(25, 80, 120)]
         public int _bytesToFillCount;
         private byte[] _bytesToFill;
 
@@ -120,6 +123,22 @@ namespace Benchmarks
             using var buffer = new PooledArrayBufferWriter<byte>(initialCapacity: _plainText.Length + _bytesToFillCount);
             _spanProtector.SpanProtectNormal(_plainText, buffer);
             return buffer.WrittenCount;
+        }
+
+        // an improved interface using Span<byte> with PooledArrayBufferWriter
+        [Benchmark]
+        public int SpanCallingGeneric_PooledArrayBufferWriter()
+        {
+            var buffer = new PooledArrayBufferWriter<byte>(initialCapacity: _plainText.Length + _bytesToFillCount);
+            try
+            {
+                _spanProtector.SpanProtectGeneric(_plainText, ref buffer);
+                return buffer.WrittenCount;
+            }
+            finally
+            {
+                buffer.Dispose();
+            }
         }
 
         // an improved interface using Span<byte> with StructPooledArrayBufferWriter
