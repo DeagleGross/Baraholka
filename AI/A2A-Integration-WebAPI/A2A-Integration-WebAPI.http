@@ -1,0 +1,23 @@
+    @baseAddress = http://localhost:5171
+
+    # Get A2A Agent Card
+    GET {{baseAddress}}/a2a/pirate/v1/card
+
+    # Send A2A request to the pirate agent
+    POST {{baseAddress}}/a2a/pirate/v1/message:stream
+    Content-Type: application/json
+    {
+      "message": {
+        "kind": "message",
+        "role": "user",
+        "parts": [
+          {
+            "kind": "text",
+            "text": "Hey pirate! Tell me where have you been",
+            "metadata": {}
+          }
+        ],
+	    "messageId": null,
+        "contextId": "foo"
+      }
+    }

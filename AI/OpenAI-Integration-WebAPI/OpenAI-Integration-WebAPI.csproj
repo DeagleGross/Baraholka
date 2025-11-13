@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>OpenAI_Integration_WebAPI</RootNamespace>
+    <UserSecretsId>97d5051c-604d-41ad-b1c2-cf53ce52097e</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="1.0.0-alpha.251110.2" />
+
+	<PackageReference Include="Azure.AI.OpenAI" Version="2.5.0-beta.1" />
+	<PackageReference Include="Azure.Identity" Version="1.17.0" />
+	<PackageReference Include="Microsoft.Extensions.AI" Version="9.10.2" />
+	<PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.10.2-preview.1.25552.1" />
+	  
+	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.1" />
+  </ItemGroup>
+
+</Project>

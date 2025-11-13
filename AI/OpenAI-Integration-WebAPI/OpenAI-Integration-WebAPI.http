@@ -1,0 +1,6 @@
+@OpenAI_Integration_WebAPI_HostAddress = http://localhost:5209
+
+GET {{OpenAI_Integration_WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
