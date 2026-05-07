@@ -152,8 +152,8 @@ public class AcceptBenchmark
     {
         Span<byte> addrBuffer = stackalloc byte[128];
 
-        // Drain first
-        DrainRawAccept();
+        // Drain any stale connections first (using the non-blocking socket)
+        DrainAccept(_listenSocketNonBlocking);
 
         for (int i = 0; i < BatchSize; i++)
         {
@@ -163,7 +163,8 @@ public class AcceptBenchmark
             {
                 fixed (byte* pAddr = addrBuffer)
                 {
-                    fd = NativeAccept(_listenSocket.Handle, pAddr, ref addrLen);
+                    // Use _listenSocketNonBlocking so accept() returns EAGAIN instead of blocking
+                    fd = NativeAccept(_listenSocketNonBlocking.Handle, pAddr, ref addrLen);
                 }
             }
 
@@ -208,23 +209,6 @@ public class AcceptBenchmark
             {
                 break;
             }
-        }
-    }
-
-    private unsafe void DrainRawAccept()
-    {
-        Span<byte> addr = stackalloc byte[128];
-        while (true)
-        {
-            int addrLen = addr.Length;
-            nint fd;
-            fixed (byte* pAddr = addr)
-            {
-                fd = NativeAccept(_listenSocket.Handle, pAddr, ref addrLen);
-            }
-
-            if (fd < 0 || fd == INVALID_SOCKET) break;
-            NativeClose(fd);
         }
     }
 
