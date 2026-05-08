@@ -1,0 +1,107 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/scenario1": {
+      "get": {
+        "summary": "Scenario1",
+        "operationId": "scenario1_scenario1_get",
+        "responses": {
+          "200": {
+            "description": "Explicit description in responses dict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BarModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scenario1b": {
+      "get": {
+        "summary": "Scenario1B",
+        "operationId": "scenario1b_scenario1b_get",
+        "responses": {
+          "200": {
+            "description": "Second description (survives Python dict dedup)",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scenario2": {
+      "get": {
+        "summary": "Scenario2",
+        "operationId": "scenario2_scenario2_get",
+        "responses": {
+          "200": {
+            "description": "Returns Foo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FooModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scenario3": {
+      "get": {
+        "summary": "Scenario3",
+        "operationId": "scenario3_scenario3_get",
+        "responses": {
+          "200": {
+            "description": "String key 200",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BarModel": {
+        "properties": {
+          "bar": {
+            "type": "string",
+            "title": "Bar"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bar"
+        ],
+        "title": "BarModel"
+      },
+      "FooModel": {
+        "properties": {
+          "foo": {
+            "type": "string",
+            "title": "Foo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "foo"
+        ],
+        "title": "FooModel"
+      }
+    }
+  }
+}
