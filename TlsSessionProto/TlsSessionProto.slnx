@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/EchoClient/EchoClient.csproj" />
+    <Project Path="samples/EchoServer/EchoServer.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/TlsSessionLib/TlsSessionLib.csproj" />
+  </Folder>
+</Solution>
