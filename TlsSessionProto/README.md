@@ -1,8 +1,5 @@
 # TlsSession prototype
 
-A small runnable proof of the proposed `TlsSession` API shape (response to
-[bartonjs feedback on dotnet/runtime#127928](https://github.com/dotnet/runtime/issues/127928#issuecomment-4445664571)).
-
 ## What this demonstrates
 
 ```
@@ -61,18 +58,3 @@ dotnet run --project samples/EchoClient -- 127.0.0.1 5443 "hello tls-session"
 You should see both modes complete the handshake against the same `SslStream`
 client and echo the message back. That is the proof that one common API shape
 (`TlsContext` + `TlsSession`) covers both transport-ownership models.
-
-## What's intentionally not in this prototype
-
-* Negotiated info getters (`NegotiatedProtocol`, `NegotiatedCipherSuite`, …) — the
-  shape is on the abstract base; implementations are stubbed.
-* Client mode SNI wiring — the API includes `TargetHostName` but the server demo
-  doesn't exercise it.
-* `TlsContext.Create(SslServerAuthenticationOptions)` — the prototype takes PEM
-  paths directly to keep the code small. The real surface would consume the
-  existing options types.
-* Async wrappers / `IDuplexPipe` adapter — those would live in a higher layer
-  (Kestrel, etc.). The point here is the synchronous primitive.
-* Any Schannel implementation of `TlsDetachedSession` — the API is shaped to
-  accept one (it's just `EncryptMessage`/`DecryptMessage`), but the prototype
-  only provides the OpenSSL backing.
